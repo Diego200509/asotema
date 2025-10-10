@@ -1,0 +1,5 @@
+# Archivos globales del entorno
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
