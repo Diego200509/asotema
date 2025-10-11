@@ -6,16 +6,21 @@ const Header = ({
   subtitle,
   user,
   onLogout,
+  activeSection,
+  onSectionChange,
   children
 }) => {
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="px-6 py-4">
         <div className="flex justify-between items-center">
+          {/* Título de la sección */}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+            {title && <h1 className="text-2xl font-bold text-gray-900">{title}</h1>}
             {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
           </div>
+
+          {/* Información del usuario y cerrar sesión */}
           <div className="flex items-center gap-4">
             {user && (
               <div className="text-right">

@@ -7,7 +7,8 @@ import Switch from '../shared/Switch';
 const UsuarioFormFields = ({ 
   formData, 
   onChange, 
-  isEdit = false 
+  isEdit = false,
+  currentUser 
 }) => {
   const roleOptions = [
     { value: 'CAJERO', label: 'Cajero' },
@@ -48,15 +49,17 @@ const UsuarioFormFields = ({
         minLength={6}
       />
 
-      {/* Rol */}
-      <Select
-        label="Rol"
-        name="rol"
-        value={formData.rol}
-        onChange={onChange}
-        options={roleOptions}
-        required
-      />
+      {/* Rol - Solo mostrar si no es ADMIN o si es creación */}
+      {!(isEdit && currentUser?.rol === 'ADMIN' && formData.rol === 'ADMIN') && (
+        <Select
+          label="Rol"
+          name="rol"
+          value={formData.rol}
+          onChange={onChange}
+          options={roleOptions}
+          required
+        />
+      )}
 
       {/* Estado Activo */}
       <Switch

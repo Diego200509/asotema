@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
 import Modal from '../shared/Modal';
 import UsuarioFormFields from './UsuarioFormFields';
@@ -13,6 +14,7 @@ const UsuarioModal = ({
 }) => {
   const isEdit = Boolean(usuarioId);
   const { showSuccess, showError } = useToast();
+  const { user: currentUser } = useAuth();
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -121,6 +123,7 @@ const UsuarioModal = ({
               formData={formData}
               onChange={handleChange}
               isEdit={isEdit}
+              currentUser={currentUser}
             />
             
             <div className="flex gap-4 pt-6">

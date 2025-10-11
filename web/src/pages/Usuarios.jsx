@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from '../config/axios';
-import Header from '../components/shared/Header';
+import Layout from '../components/layout/Layout';
 import Card from '../components/shared/Card';
 import UsuarioSearch from '../components/usuarios/UsuarioSearch';
 import UsuarioTable from '../components/usuarios/UsuarioTable';
@@ -100,47 +100,38 @@ const Usuarios = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header
-        title="ASOTEMA"
-        subtitle="Sistema de Gestión de Usuarios"
-        user={user}
-        onLogout={handleLogout}
+    <Layout>
+      <UsuarioSearch
+        search={search}
+        onSearchChange={handleSearch}
+        onNewUsuario={handleNewUsuario}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <UsuarioSearch
-          search={search}
-          onSearchChange={handleSearch}
-          onNewUsuario={handleNewUsuario}
+      <Card className="overflow-hidden">
+        <UsuarioTable
+          usuarios={usuarios}
+          loading={loading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         />
-
-        <Card className="overflow-hidden">
-          <UsuarioTable
-            usuarios={usuarios}
-            loading={loading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-          
-          <UsuarioPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </Card>
-          </main>
-          
-          {/* Modal para crear/editar usuario */}
-          <UsuarioModal
-            isOpen={isModalOpen}
-            onClose={handleModalClose}
-            usuarioId={editingUsuarioId}
-            onSuccess={handleModalSuccess}
-          />
-        </div>
-      );
-    };
+        
+        <UsuarioPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </Card>
+      
+      {/* Modal para crear/editar usuario */}
+      <UsuarioModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        usuarioId={editingUsuarioId}
+        onSuccess={handleModalSuccess}
+      />
+    </Layout>
+  );
+};
 
     export default Usuarios;
 
