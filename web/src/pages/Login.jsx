@@ -18,7 +18,7 @@ const Login = () => {
 
     if (result.success) {
       showSuccess('¡Bienvenido! Sesión iniciada correctamente');
-      navigate('/usuarios');
+      navigate('/socios'); // Redirigir a socios en lugar de usuarios
     } else {
       showError(result.message);
     }

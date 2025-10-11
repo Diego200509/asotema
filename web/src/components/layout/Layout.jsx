@@ -51,6 +51,7 @@ const Layout = ({ children }) => {
           onLogout={handleLogout}
           collapsed={sidebarCollapsed}
           onToggle={toggleSidebar}
+          user={user}
         />
       </div>
       
