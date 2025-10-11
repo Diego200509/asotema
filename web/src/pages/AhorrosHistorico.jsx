@@ -16,7 +16,7 @@ const AhorrosHistorico = () => {
   const [pagination, setPagination] = useState({
     current_page: 1,
     last_page: 1,
-    per_page: 15,
+    per_page: 6,
     total: 0
   });
   
@@ -168,8 +168,8 @@ const AhorrosHistorico = () => {
             loading={loading}
             onRefresh={fetchAportes}
             showSocio={true}
-            pagination={pagination.total > 6 ? pagination : null}
-            onPageChange={pagination.total > 6 ? handlePageChange : null}
+            pagination={pagination.last_page > 1 ? pagination : null}
+            onPageChange={pagination.last_page > 1 ? handlePageChange : null}
           />
         </div>
 

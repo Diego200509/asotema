@@ -26,7 +26,7 @@ const SocioDetalleTabs = ({ socio }) => {
   const [paginationAhorro, setPaginationAhorro] = useState({
     current_page: 1,
     last_page: 1,
-    per_page: 15,
+    per_page: 6,
     total: 0
   });
   const [filtrosAhorro, setFiltrosAhorro] = useState({
@@ -382,7 +382,7 @@ const SocioDetalleTabs = ({ socio }) => {
                   </div>
                   
                   {/* Paginación para movimientos */}
-                  {estadoCuenta?.movimientos && estadoCuenta.movimientos.length > 6 && (
+                  {estadoCuenta?.movimientos && Math.ceil(estadoCuenta.movimientos.length / paginationMovimientos.per_page) > 1 && (
                     <div className="px-4 py-3 border-t border-gray-200">
                       <Pagination
                         currentPage={paginationMovimientos.current_page}
@@ -431,8 +431,8 @@ const SocioDetalleTabs = ({ socio }) => {
               onRefresh={fetchAportesAhorro}
               showSocio={false}
               allowDelete={false}
-              pagination={paginationAhorro.total > 6 ? paginationAhorro : null}
-              onPageChange={paginationAhorro.total > 6 ? handlePageChangeAhorro : null}
+              pagination={paginationAhorro.last_page > 1 ? paginationAhorro : null}
+              onPageChange={paginationAhorro.last_page > 1 ? handlePageChangeAhorro : null}
             />
           </div>
         )}
