@@ -10,7 +10,6 @@ const UsuarioFormFields = ({
   isEdit = false 
 }) => {
   const roleOptions = [
-    { value: 'ADMIN', label: 'Administrador' },
     { value: 'CAJERO', label: 'Cajero' },
     { value: 'TESORERO', label: 'Tesorero' }
   ];
@@ -44,15 +43,10 @@ const UsuarioFormFields = ({
         name="password"
         value={formData.password}
         onChange={onChange}
-        placeholder="Mínimo 6 caracteres"
+        placeholder={isEdit ? "Dejar en blanco para mantener la actual" : "Mínimo 6 caracteres"}
         required={!isEdit}
         minLength={6}
       />
-      {isEdit && (
-        <p className="text-xs text-gray-500 mt-1">
-          Dejar en blanco para mantener la actual
-        </p>
-      )}
 
       {/* Rol */}
       <Select

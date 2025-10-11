@@ -8,6 +8,7 @@ import Card from '../components/shared/Card';
 import UsuarioSearch from '../components/usuarios/UsuarioSearch';
 import UsuarioTable from '../components/usuarios/UsuarioTable';
 import UsuarioPagination from '../components/usuarios/UsuarioPagination';
+import UsuarioModal from '../components/usuarios/UsuarioModal';
 
 const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -16,6 +17,8 @@ const Usuarios = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [perPage] = useState(10);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUsuarioId, setEditingUsuarioId] = useState(null);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -74,11 +77,22 @@ const Usuarios = () => {
   };
 
   const handleEdit = (id) => {
-    navigate(`/usuarios/editar/${id}`);
+    setEditingUsuarioId(id);
+    setIsModalOpen(true);
   };
 
   const handleNewUsuario = () => {
-    navigate('/usuarios/nuevo');
+    setEditingUsuarioId(null);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingUsuarioId(null);
+  };
+
+  const handleModalSuccess = () => {
+    fetchUsuarios(); // Refresh the table
   };
 
   const handlePageChange = (page) => {
@@ -115,10 +129,18 @@ const Usuarios = () => {
             onPageChange={handlePageChange}
           />
         </Card>
-      </main>
-    </div>
-  );
-};
+          </main>
+          
+          {/* Modal para crear/editar usuario */}
+          <UsuarioModal
+            isOpen={isModalOpen}
+            onClose={handleModalClose}
+            usuarioId={editingUsuarioId}
+            onSuccess={handleModalSuccess}
+          />
+        </div>
+      );
+    };
 
-export default Usuarios;
+    export default Usuarios;
 
