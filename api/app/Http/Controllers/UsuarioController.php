@@ -37,7 +37,7 @@ class UsuarioController extends Controller
         }
 
         // Paginación
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('per_page', 6);
         $usuarios = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([

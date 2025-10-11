@@ -16,111 +16,119 @@ const Usuarios = () => {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [perPage] = useState(10);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUsuarioId, setEditingUsuarioId] = useState(null);
-  const navigate = useNavigate();
-  const { logout, user } = useAuth();
-  const { showSuccess, showError } = useToast();
+  const [totalItems, setTotalItems] = useState(0);
+  const [perPage] = useState(6);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingUsuarioId, setEditingUsuarioId] = useState(null);
+    const navigate = useNavigate();
+    const { logout, user } = useAuth();
+    const { showSuccess, showError } = useToast();
 
-  useEffect(() => {
-    fetchUsuarios();
-  }, [currentPage, search]);
-
-  const fetchUsuarios = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get('/usuarios', {
-        params: {
-          page: currentPage,
-          per_page: perPage,
-          search: search,
-        },
-      });
-
-      if (response.data.success) {
-        setUsuarios(response.data.data.data);
-        setTotalPages(response.data.data.last_page);
-      }
-    } catch (error) {
-      console.error('Error al cargar usuarios:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearch = (e) => {
-    setSearch(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este usuario?')) {
-      return;
-    }
-
-    try {
-      const response = await axios.delete(`/usuarios/${id}`);
-      if (response.data.success) {
-        showSuccess('Usuario eliminado exitosamente');
+    useEffect(() => {
         fetchUsuarios();
-      }
-    } catch (error) {
-      console.error('Error al eliminar usuario:', error);
-      showError('Error al eliminar usuario');
-    }
-  };
+    }, [currentPage, search]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+    const fetchUsuarios = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get('/usuarios', {
+                params: {
+                    page: currentPage,
+                    per_page: perPage,
+                    search: search,
+                },
+            });
 
-  const handleEdit = (id) => {
-    setEditingUsuarioId(id);
-    setIsModalOpen(true);
-  };
+            if (response.data.success) {
+                setUsuarios(response.data.data.data);
+                setTotalPages(response.data.data.last_page);
+                setTotalItems(response.data.data.total);
+            }
+        } catch (error) {
+            console.error('Error al cargar usuarios:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const handleNewUsuario = () => {
-    setEditingUsuarioId(null);
-    setIsModalOpen(true);
-  };
+    const handleSearch = (e) => {
+        setSearch(e.target.value);
+        setCurrentPage(1);
+    };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setEditingUsuarioId(null);
-  };
+    const handleDelete = async (id) => {
+        if (!window.confirm('¿Estás seguro de eliminar este usuario?')) {
+            return;
+        }
 
-  const handleModalSuccess = () => {
-    fetchUsuarios(); // Refresh the table
-  };
+        try {
+            const response = await axios.delete(`/usuarios/${id}`);
+            if (response.data.success) {
+                showSuccess('Usuario eliminado exitosamente');
+                fetchUsuarios();
+            }
+        } catch (error) {
+            console.error('Error al eliminar usuario:', error);
+            showError('Error al eliminar usuario');
+        }
+    };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login');
+    };
+
+    const handleEdit = (id) => {
+        setEditingUsuarioId(id);
+        setIsModalOpen(true);
+    };
+
+    const handleNewUsuario = () => {
+        setEditingUsuarioId(null);
+        setIsModalOpen(true);
+    };
+
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        setEditingUsuarioId(null);
+    };
+
+    const handleModalSuccess = () => {
+        fetchUsuarios(); // Refresh the table
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
 
   return (
     <Layout>
-      <UsuarioSearch
-        search={search}
-        onSearchChange={handleSearch}
-        onNewUsuario={handleNewUsuario}
-      />
+      <div className="h-full flex flex-col">
+        <UsuarioSearch
+          search={search}
+          onSearchChange={handleSearch}
+          onNewUsuario={handleNewUsuario}
+        />
 
-      <Card className="overflow-hidden">
-        <UsuarioTable
-          usuarios={usuarios}
-          loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-        
-        <UsuarioPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
-      </Card>
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <UsuarioTable
+              usuarios={usuarios}
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </div>
+          
+          <UsuarioPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={totalItems}
+            perPage={perPage}
+          />
+        </Card>
+      </div>
       
       {/* Modal para crear/editar usuario */}
       <UsuarioModal
@@ -133,5 +141,5 @@ const Usuarios = () => {
   );
 };
 
-    export default Usuarios;
+export default Usuarios;
 

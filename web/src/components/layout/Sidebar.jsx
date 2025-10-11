@@ -41,7 +41,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout }) => {
   ];
 
   return (
-    <aside className="bg-white border-r border-gray-200 shadow-sm min-h-screen w-64 flex flex-col">
+    <aside className="bg-white border-r border-gray-200 shadow-sm h-screen w-64 flex flex-col">
       <div className="p-6 flex-1">
         {/* Logo */}
         <div className="mb-8">

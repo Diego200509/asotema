@@ -10,3 +10,4 @@ export { default as Alert } from './Alert';
 export { default as Header } from './Header';
 export { default as Toast } from './Toast';
 export { default as ToastContainer } from './ToastContainer';
+export { default as Pagination } from './Pagination';

@@ -19,16 +19,18 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar 
-        activeSection={activeSection} 
-        onSectionChange={handleSectionChange}
-        onLogout={handleLogout}
-      />
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
+      {/* Sidebar fijo */}
+      <div className="flex-shrink-0">
+        <Sidebar 
+          activeSection={activeSection} 
+          onSectionChange={handleSectionChange}
+          onLogout={handleLogout}
+        />
+      </div>
       
       {/* Contenido principal */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 h-full">
         {/* Header */}
         <Header
           title=""
@@ -37,7 +39,7 @@ const Layout = ({ children }) => {
         />
         
         {/* Main content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 overflow-hidden">
           {children}
         </main>
       </div>
