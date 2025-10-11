@@ -165,6 +165,7 @@ Usuarios adicionales creados:
    - Validación de credenciales
    - Almacenamiento de JWT en localStorage
    - Redirección automática al panel
+   - Componentes modulares: LoginHeader, LoginForm, LoginCredentials
 
 2. **Panel de Usuarios:**
    - Tabla con listado de usuarios
@@ -172,17 +173,55 @@ Usuarios adicionales creados:
    - Paginación
    - Botones de editar y eliminar
    - Badges de rol y estado (activo/inactivo)
+   - Componentes modulares: UsuarioTable, UsuarioSearch, UsuarioPagination
 
 3. **Formulario de Usuario:**
    - Crear y editar usuarios
    - Select de rol (ADMIN, CAJERO, TESORERO)
    - Toggle para activar/desactivar usuario
    - Validación de campos
+   - Componentes modulares: UsuarioFormFields, UsuarioFormActions
 
 4. **Protección de Rutas:**
    - Solo usuarios autenticados pueden acceder
    - Solo usuarios con rol ADMIN pueden gestionar usuarios
    - Redirección automática si no está autorizado
+
+### **Arquitectura de Componentes:**
+
+```
+src/
+├── components/
+│   ├── shared/           # Componentes reutilizables
+│   │   ├── Button.jsx    # Botones con variantes (primary, danger, secondary)
+│   │   ├── Input.jsx     # Campos de entrada con validación
+│   │   ├── Select.jsx    # Select con opciones
+│   │   ├── Switch.jsx    # Toggle switch
+│   │   ├── Card.jsx      # Tarjetas con sombra
+│   │   ├── Badge.jsx     # Badges de estado y rol
+│   │   ├── Modal.jsx     # Modales reutilizables
+│   │   ├── Alert.jsx     # Alertas de error/success
+│   │   ├── Header.jsx    # Header con usuario y logout
+│   │   └── index.js      # Exportaciones centralizadas
+│   ├── login/            # Componentes específicos de login
+│   │   ├── LoginHeader.jsx
+│   │   ├── LoginForm.jsx
+│   │   ├── LoginCredentials.jsx
+│   │   ├── LoginCard.jsx
+│   │   └── index.js
+│   ├── usuarios/         # Componentes específicos de usuarios
+│   │   ├── UsuarioTable.jsx
+│   │   ├── UsuarioSearch.jsx
+│   │   ├── UsuarioPagination.jsx
+│   │   ├── UsuarioFormFields.jsx
+│   │   ├── UsuarioFormActions.jsx
+│   │   └── index.js
+│   └── ProtectedRoute.jsx
+└── pages/                # Páginas principales (orquestadores)
+    ├── Login.jsx
+    ├── Usuarios.jsx
+    └── UsuarioForm.jsx
+```
 
 ---
 

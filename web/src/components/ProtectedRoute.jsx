@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Button from './shared/Button';
 
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const { user, loading } = useAuth();
@@ -22,12 +23,12 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h2>
           <p className="text-gray-600 mb-4">No tienes permisos para acceder a esta página</p>
-          <button
+          <Button
+            variant="primary"
             onClick={() => window.history.back()}
-            className="btn-primary"
           >
             Volver
-          </button>
+          </Button>
         </div>
       </div>
     );

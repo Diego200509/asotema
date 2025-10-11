@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from '../config/axios';
+import Header from '../components/shared/Header';
+import Card from '../components/shared/Card';
+import Alert from '../components/shared/Alert';
+import UsuarioFormFields from '../components/usuarios/UsuarioFormFields';
+import UsuarioFormActions from '../components/usuarios/UsuarioFormActions';
 
 const UsuarioForm = () => {
   const { id } = useParams();
@@ -97,163 +102,38 @@ const UsuarioForm = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">ASOTEMA</h1>
-              <p className="text-sm text-gray-600">
-                {isEdit ? 'Editar Usuario' : 'Nuevo Usuario'}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user?.nombre}</p>
-              <p className="text-xs text-gray-600">{user?.rol}</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header
+        title="ASOTEMA"
+        subtitle={isEdit ? 'Editar Usuario' : 'Nuevo Usuario'}
+        user={user}
+      />
 
-      {/* Main Content */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="card p-8">
+        <Card padding="lg">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             {isEdit ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
           </h2>
 
           {error && (
-            <div className="mb-6 p-3 bg-danger-50 border border-danger-200 text-danger-700 rounded-lg text-sm">
+            <Alert type="error" className="mb-6">
               {error}
-            </div>
+            </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Nombre */}
-            <div>
-              <label
-                htmlFor="nombre"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Nombre Completo <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                required
-                className="input-field"
-                placeholder="Ej: Juan Pérez"
-              />
-            </div>
-
-            {/* Correo */}
-            <div>
-              <label
-                htmlFor="correo"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Correo Electrónico <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                id="correo"
-                name="correo"
-                value={formData.correo}
-                onChange={handleChange}
-                required
-                className="input-field"
-                placeholder="usuario@asotema.com"
-              />
-            </div>
-
-            {/* Contraseña */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Contraseña {!isEdit && <span className="text-red-500">*</span>}
-                {isEdit && (
-                  <span className="text-xs text-gray-500 ml-2">
-                    (Dejar en blanco para mantener la actual)
-                  </span>
-                )}
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required={!isEdit}
-                minLength={6}
-                className="input-field"
-                placeholder="Mínimo 6 caracteres"
-              />
-            </div>
-
-            {/* Rol */}
-            <div>
-              <label
-                htmlFor="rol"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Rol <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="rol"
-                name="rol"
-                value={formData.rol}
-                onChange={handleChange}
-                required
-                className="input-field bg-white"
-              >
-                <option value="ADMIN">Administrador</option>
-                <option value="CAJERO">Cajero</option>
-                <option value="TESORERO">Tesorero</option>
-              </select>
-            </div>
-
-            {/* Estado Activo */}
-            <div className="flex items-center">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="activo"
-                  checked={formData.activo}
-                  onChange={handleChange}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                <span className="ml-3 text-sm font-medium text-gray-700">
-                  Usuario Activo
-                </span>
-              </label>
-            </div>
-
-            {/* Botones */}
-            <div className="flex gap-4 pt-6">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Guardando...' : isEdit ? 'Actualizar Usuario' : 'Crear Usuario'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={loading}
-                className="flex-1 btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Cancelar
-              </button>
-            </div>
+          <form onSubmit={handleSubmit}>
+            <UsuarioFormFields
+              formData={formData}
+              onChange={handleChange}
+              isEdit={isEdit}
+            />
+            
+            <UsuarioFormActions
+              isEdit={isEdit}
+              loading={loading}
+              onCancel={handleCancel}
+            />
           </form>
-        </div>
+        </Card>
       </main>
     </div>
   );
