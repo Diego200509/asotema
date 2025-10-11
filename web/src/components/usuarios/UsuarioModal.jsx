@@ -14,7 +14,7 @@ const UsuarioModal = ({
 }) => {
   const isEdit = Boolean(usuarioId);
   const { showSuccess, showError } = useToast();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateUser } = useAuth();
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -89,6 +89,18 @@ const UsuarioModal = ({
         : await axios.post('/usuarios', dataToSend);
 
       if (response.data.success) {
+        // Si estamos editando el usuario actual, actualizar el AuthContext
+        if (isEdit && currentUser && parseInt(usuarioId) === currentUser.id) {
+          const updatedUserData = {
+            ...currentUser,
+            nombre: formData.nombre,
+            correo: formData.correo,
+            rol: formData.rol,
+            activo: formData.activo,
+          };
+          updateUser(updatedUserData);
+        }
+        
         showSuccess(isEdit ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente');
         onSuccess();
         onClose();

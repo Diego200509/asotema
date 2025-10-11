@@ -53,12 +53,20 @@ export const AuthProvider = ({ children }) => {
     return user?.rol === 'ADMIN';
   };
 
+  const updateUser = (updatedUserData) => {
+    // Actualizar el estado local
+    setUser(updatedUserData);
+    // Actualizar el localStorage
+    localStorage.setItem('user', JSON.stringify(updatedUserData));
+  };
+
   const value = {
     user,
     loading,
     login,
     logout,
     isAdmin,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
