@@ -21,7 +21,7 @@ class PrestamoService
     /**
      * Crear un préstamo con su cronograma de cuotas
      */
-    public function crearPrestamo(int $socioId, float $capital, int $plazo, string $fechaInicio, float $tasa = 0.01): Prestamo
+    public function crearPrestamo(int $socioId, float $capital, int $plazo, ?string $fechaInicio = null, float $tasa = 0.01): Prestamo
     {
         return DB::transaction(function () use ($socioId, $capital, $plazo, $fechaInicio, $tasa) {
             // Validar que el socio existe y está activo
@@ -30,13 +30,16 @@ class PrestamoService
                 throw new \Exception("El socio no existe o no está activo");
             }
 
+            // Si no se proporciona fecha de inicio, usar la fecha actual
+            $fechaInicioFinal = $fechaInicio ?: now()->toDateString();
+
             // Crear el préstamo
             $prestamo = Prestamo::create([
                 'socio_id' => $socioId,
                 'capital' => $capital,
                 'tasa_mensual' => $tasa,
                 'plazo_meses' => $plazo,
-                'fecha_inicio' => $fechaInicio,
+                'fecha_inicio' => $fechaInicioFinal,
                 'estado' => 'PENDIENTE',
                 'creado_por' => auth()->id(),
             ]);

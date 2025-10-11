@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDateForEcuador } from '../../utils/dateUtils';
 
 const CronogramaPreview = ({ capital, plazo, tasa = 0.01, fechaInicio }) => {
   const formatCurrency = (amount) => {
@@ -10,9 +11,7 @@ const CronogramaPreview = ({ capital, plazo, tasa = 0.01, fechaInicio }) => {
   };
 
   const formatDate = (dateString, monthsToAdd) => {
-    const date = new Date(dateString);
-    date.setMonth(date.getMonth() + monthsToAdd);
-    return date.toLocaleDateString('es-EC');
+    return formatDateForEcuador(dateString, monthsToAdd);
   };
 
   const calcularCuotaFija = (capital, tasa, plazo) => {

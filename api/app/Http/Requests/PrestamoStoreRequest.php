@@ -56,7 +56,7 @@ class PrestamoStoreRequest extends FormRequest
             'fecha_inicio' => [
                 'required',
                 'date',
-                'after_or_equal:today'
+                'date_equals:today'
             ]
         ];
     }
@@ -82,7 +82,7 @@ class PrestamoStoreRequest extends FormRequest
             'plazo_meses.in' => 'El plazo debe ser 3, 6, 9 o 12 meses.',
             'fecha_inicio.required' => 'La fecha de inicio es requerida.',
             'fecha_inicio.date' => 'La fecha de inicio debe ser una fecha válida.',
-            'fecha_inicio.after_or_equal' => 'La fecha de inicio no puede ser anterior a hoy.',
+            'fecha_inicio.date_equals' => 'La fecha de inicio debe ser la fecha actual.',
         ];
     }
 

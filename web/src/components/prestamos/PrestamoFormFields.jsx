@@ -86,9 +86,12 @@ const PrestamoFormFields = ({ formData, onChange }) => {
           type="date"
           value={formData.fecha_inicio}
           onChange={onChange}
-          min={new Date().toISOString().split('T')[0]}
+          disabled={true}
           required
         />
+        <p className="text-sm text-gray-600 mt-1">
+          La fecha de inicio siempre será la fecha actual
+        </p>
       </div>
     </div>
   );
