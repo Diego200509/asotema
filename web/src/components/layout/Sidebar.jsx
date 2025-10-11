@@ -1,4 +1,5 @@
 import React from 'react';
+import asotemaIcon from '../../assets/icons/asotema.png';
 
 const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle }) => {
   const menuItems = [
@@ -42,21 +43,20 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
 
   return (
     <aside className={`bg-white border-r border-gray-200 shadow-sm h-screen flex flex-col transition-all duration-300 ${
-      collapsed ? 'w-16' : 'w-64'
+      collapsed ? 'w-20' : 'w-80'
     }`}>
-      <div className={`flex-1 ${collapsed ? 'p-2' : 'p-6'}`}>
+      <div className={`flex-1 ${collapsed ? 'p-3' : 'p-8'}`}>
         {/* Logo y botón toggle */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            {!collapsed && (
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">ASOTEMA</h1>
-                <p className="text-sm text-gray-600">Sistema de Gestión</p>
-              </div>
-            )}
+            <img 
+              src={asotemaIcon} 
+              alt="ASOTEMA" 
+              className={`mx-auto ${collapsed ? 'w-10 h-10' : 'w-16 h-16'}`}
+            />
             <button
               onClick={onToggle}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className="p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
             >
               <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,8 +80,8 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                gap: collapsed ? '0' : '0.75rem',
-                padding: collapsed ? '0.75rem' : '0.75rem',
+                gap: collapsed ? '0' : '1rem',
+                padding: collapsed ? '1rem' : '1rem',
                 borderRadius: '0.5rem',
                 textAlign: 'left',
                 transition: 'all 0.2s',
@@ -90,7 +90,8 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
                 border: 'none',
                 cursor: 'pointer',
                 fontWeight: '500',
-                justifyContent: collapsed ? 'center' : 'flex-start'
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                fontSize: collapsed ? '0.875rem' : '1rem'
               }}
               onMouseEnter={(e) => {
                 if (activeSection !== item.id) {
@@ -106,7 +107,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
               }}
               title={collapsed ? item.label : ''}
             >
-              <span style={{ color: activeSection === item.id ? '#ffffff' : '#6b7280' }}>
+              <span style={{ color: activeSection === item.id ? '#ffffff' : '#6b7280' }} className="w-6 h-6">
                 {item.icon}
               </span>
               {!collapsed && <span>{item.label}</span>}
@@ -116,7 +117,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
       </div>
 
       {/* Sección inferior solo con cerrar sesión */}
-      <div className={`border-t border-gray-200 ${collapsed ? 'p-2' : 'p-6'}`}>
+      <div className={`border-t border-gray-200 ${collapsed ? 'p-3' : 'p-8'}`}>
         {onLogout && (
           <button
             onClick={onLogout}
@@ -124,8 +125,8 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
               width: '100%',
               backgroundColor: '#DC2626',
               color: '#ffffff',
-              padding: collapsed ? '0.75rem' : '0.75rem',
-              fontSize: '0.875rem',
+              padding: collapsed ? '1rem' : '1rem',
+              fontSize: collapsed ? '0.875rem' : '1rem',
               fontWeight: '500',
               borderRadius: '0.5rem',
               border: 'none',
@@ -135,7 +136,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
               display: 'flex',
               alignItems: 'center',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              gap: collapsed ? '0' : '0.5rem'
+              gap: collapsed ? '0' : '0.75rem'
             }}
             onMouseEnter={(e) => {
               e.target.style.backgroundColor = '#b91c1c';
@@ -145,7 +146,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
             }}
             title={collapsed ? 'Cerrar Sesión' : ''}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             {!collapsed && <span>Cerrar Sesión</span>}
