@@ -1,0 +1,302 @@
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import axios from '../../config/axios';
+import Badge from '../shared/Badge';
+import Button from '../shared/Button';
+
+const SocioDetalleTabs = ({ socio }) => {
+  const [activeTab, setActiveTab] = useState('datos');
+  const [estadoCuenta, setEstadoCuenta] = useState(null);
+  const [loadingEstado, setLoadingEstado] = useState(false);
+  
+  const { user } = useAuth();
+  const { showError } = useToast();
+
+  const canModify = user && (user.rol === 'ADMIN' || user.rol === 'TESORERO');
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('es-EC', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('es-EC');
+  };
+
+  const fetchEstadoCuenta = async () => {
+    if (!socio?.id) return;
+    
+    setLoadingEstado(true);
+    try {
+      const response = await axios.get(`/reportes/socio/${socio.id}/estado`);
+      if (response.data.success) {
+        setEstadoCuenta(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar estado de cuenta:', error);
+      showError('Error al cargar estado de cuenta');
+    } finally {
+      setLoadingEstado(false);
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'estado' && !estadoCuenta) {
+      fetchEstadoCuenta();
+    }
+  };
+
+  const exportToCSV = () => {
+    if (!estadoCuenta?.movimientos) return;
+
+    const headers = ['Fecha', 'Tipo', 'Monto', 'Descripción', 'Saldo Acumulado'];
+    const rows = estadoCuenta.movimientos.map(mov => [
+      mov.fecha,
+      mov.tipo,
+      formatCurrency(mov.monto),
+      mov.descripcion,
+      formatCurrency(mov.saldo_acumulado || 0)
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `estado_cuenta_${socio.cedula}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const tabs = [
+    { id: 'datos', label: 'Datos' },
+    { id: 'prestamos', label: 'Préstamos' },
+    { id: 'estado', label: 'Estado de Cuenta' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.id
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div>
+        {activeTab === 'datos' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Información Personal
+              </h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Cédula:</span>
+                  <span className="font-medium">{socio.cedula}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Código:</span>
+                  <span className="font-medium">{socio.codigo}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Nombres:</span>
+                  <span className="font-medium">{socio.nombres}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Apellidos:</span>
+                  <span className="font-medium">{socio.apellidos}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Teléfono:</span>
+                  <span className="font-medium">{socio.telefono}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Correo:</span>
+                  <span className="font-medium">{socio.correo}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Información de Afiliación
+              </h4>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Estado:</span>
+                  <Badge variant={socio.estado === 'ACTIVO' ? 'success' : 'danger'}>
+                    {socio.estado}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Fecha de ingreso:</span>
+                  <span className="font-medium">{formatDate(socio.fecha_ingreso)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Creado:</span>
+                  <span className="font-medium">{formatDate(socio.created_at)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'prestamos' && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-lg font-semibold text-gray-900">
+                Préstamos del Socio
+              </h4>
+              {canModify && (
+                <Button
+                  variant="primary"
+                  onClick={() => window.location.href = `/prestamos?search=${socio.cedula}`}
+                >
+                  Ver Préstamos
+                </Button>
+              )}
+            </div>
+            <p className="text-gray-600">
+              Para ver los préstamos de este socio, haga clic en "Ver Préstamos" o navegue a la sección de Préstamos.
+            </p>
+          </div>
+        )}
+
+        {activeTab === 'estado' && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-lg font-semibold text-gray-900">
+                Estado de Cuenta
+              </h4>
+              {estadoCuenta && (
+                <Button
+                  variant="secondary"
+                  onClick={exportToCSV}
+                >
+                  Exportar CSV
+                </Button>
+              )}
+            </div>
+
+            {loadingEstado ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-gray-600">Cargando estado de cuenta...</p>
+              </div>
+            ) : estadoCuenta ? (
+              <div className="space-y-4">
+                {/* Resumen */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h5 className="font-semibold text-blue-900 mb-2">Resumen de la Cuenta</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Total movimientos:</span>
+                      <div className="font-semibold">{estadoCuenta.resumen?.total_movimientos || 0}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Total debe:</span>
+                      <div className="font-semibold">{formatCurrency(estadoCuenta.resumen?.total_debe || 0)}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Total haber:</span>
+                      <div className="font-semibold">{formatCurrency(estadoCuenta.resumen?.total_haber || 0)}</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-blue-200">
+                    <span className="text-gray-600">Saldo actual:</span>
+                    <div className={`font-bold text-lg ${(estadoCuenta.saldo_actual || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(estadoCuenta.saldo_actual || 0)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Movimientos */}
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                    <h5 className="font-semibold text-gray-900">Movimientos</h5>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Fecha
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Tipo
+                          </th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                            Monto
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Descripción
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                            Creado por
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {estadoCuenta.movimientos?.map((movimiento, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 text-sm text-gray-900">
+                              {formatDate(movimiento.fecha)}
+                            </td>
+                            <td className="px-4 py-2 text-sm">
+                              <Badge variant={movimiento.tipo === 'DEBE' ? 'danger' : 'success'}>
+                                {movimiento.tipo}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-2 text-sm text-right font-medium">
+                              {formatCurrency(movimiento.monto)}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-500">
+                              {movimiento.descripcion}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-500">
+                              {movimiento.creado_por}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-gray-600">No se encontró información de la cuenta</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SocioDetalleTabs;

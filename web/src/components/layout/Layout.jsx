@@ -11,31 +11,39 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  // Detectar la sección activa según la ruta actual
-  useEffect(() => {
-    const path = location.pathname;
-    if (path.startsWith('/usuarios')) {
-      setActiveSection('usuarios');
-    } else if (path.startsWith('/socios')) {
-      setActiveSection('socios');
-    }
-  }, [location]);
+      // Detectar la sección activa según la ruta actual
+      useEffect(() => {
+        const path = location.pathname;
+        if (path.startsWith('/usuarios')) {
+          setActiveSection('usuarios');
+        } else if (path.startsWith('/socios')) {
+          setActiveSection('socios');
+        } else if (path.startsWith('/prestamos')) {
+          setActiveSection('prestamos');
+        } else if (path.startsWith('/reportes')) {
+          setActiveSection('reportes');
+        }
+      }, [location]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  const handleSectionChange = (section) => {
-    setActiveSection(section);
-    // Navegar a la sección correspondiente
-    if (section === 'usuarios') {
-      navigate('/usuarios');
-    } else if (section === 'socios') {
-      navigate('/socios');
-    }
-    // Agregar más secciones según sea necesario
-  };
+      const handleSectionChange = (section) => {
+        setActiveSection(section);
+        // Navegar a la sección correspondiente
+        if (section === 'usuarios') {
+          navigate('/usuarios');
+        } else if (section === 'socios') {
+          navigate('/socios');
+        } else if (section === 'prestamos') {
+          navigate('/prestamos');
+        } else if (section === 'reportes') {
+          navigate('/reportes');
+        }
+        // Agregar más secciones según sea necesario
+      };
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);

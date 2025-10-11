@@ -461,4 +461,37 @@
     color: #dc2626;
     border-color: #fecaca;
   }
+
+  .badge-warning {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    border: 1px solid;
+    background-color: #fef3c7;
+    color: #d97706;
+    border-color: #fde68a;
+  }
+
+  .badge-info {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    border: 1px solid;
+    background-color: #dbeafe;
+    color: #2563eb;
+    border-color: #bfdbfe;
+  }
+
+  .badge-secondary {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    border: 1px solid;
+    background-color: #f3f4f6;
+    color: #374151;
+    border-color: #d1d5db;
+  }
 }

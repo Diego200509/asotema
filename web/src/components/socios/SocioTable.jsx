@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Badge from '../shared/Badge';
+import { PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 const SocioTable = ({ socios, loading, onEdit, onDelete, canModify }) => {
+  const navigate = useNavigate();
   const getEstadoBadgeVariant = (estado) => {
     return estado === 'ACTIVO' ? 'success' : 'danger';
   };
@@ -48,11 +51,9 @@ const SocioTable = ({ socios, loading, onEdit, onDelete, canModify }) => {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Estado
             </th>
-            {canModify && (
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            )}
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Acciones
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
@@ -81,28 +82,36 @@ const SocioTable = ({ socios, loading, onEdit, onDelete, canModify }) => {
                   {socio.estado}
                 </Badge>
               </td>
-              {canModify && (
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div className="flex justify-end gap-2">
                   <button
-                    onClick={() => onEdit(socio.id)}
-                    className="text-primary hover:text-primary-700 mr-4 transition-colors"
-                    title="Editar"
+                    onClick={() => navigate(`/socios/${socio.id}`)}
+                    className="text-primary-600 hover:text-primary-900 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                    title="Ver detalle"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                    <EyeIcon className="h-5 w-5" />
                   </button>
-                  <button
-                    onClick={() => onDelete(socio.id)}
-                    className="text-danger hover:text-danger-700 transition-colors"
-                    title="Eliminar"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </td>
-              )}
+                  
+                  {canModify && (
+                    <>
+                      <button
+                        onClick={() => onEdit(socio.id)}
+                        className="text-primary-600 hover:text-primary-900 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                        title="Editar"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(socio.id)}
+                        className="text-danger-600 hover:text-danger-900 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                        title="Eliminar"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>

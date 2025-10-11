@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\SocioController;
+use App\Http\Controllers\PrestamoController;
+use App\Http\Controllers\ReportesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,6 +55,35 @@ Route::middleware(['auth:api'])->group(function () {
             Route::post('/', [SocioController::class, 'store']);
             Route::put('/{socio}', [SocioController::class, 'update']);
             Route::delete('/{socio}', [SocioController::class, 'destroy']);
+        });
+    });
+
+    // Rutas CRUD de préstamos
+    Route::prefix('prestamos')->group(function () {
+        // Lectura para todos los roles autenticados
+        Route::get('/', [PrestamoController::class, 'index']);
+        Route::get('/{id}', [PrestamoController::class, 'show']);
+
+        // Crear préstamos solo para ADMIN y TESORERO
+        Route::middleware(['role:ADMIN,TESORERO'])->group(function () {
+            Route::post('/', [PrestamoController::class, 'store']);
+        });
+
+        // Registrar pagos para ADMIN, TESORERO y CAJERO
+        Route::middleware(['role:ADMIN,TESORERO,CAJERO'])->group(function () {
+            Route::post('/{prestamo}/pagar', [PrestamoController::class, 'pagar']);
+        });
+    });
+
+    // Rutas de reportes
+    Route::prefix('reportes')->group(function () {
+        // Reportes para todos los roles autenticados
+        Route::get('/socio/{socioId}/estado', [ReportesController::class, 'estadoSocio']);
+        
+        // Reportes administrativos solo para ADMIN y TESORERO
+        Route::middleware(['role:ADMIN,TESORERO'])->group(function () {
+            Route::get('/cartera-prestamos', [ReportesController::class, 'carteraPrestamos']);
+            Route::get('/ingresos-intereses', [ReportesController::class, 'ingresosIntereses']);
         });
     });
 });

@@ -6,6 +6,10 @@ import Login from './pages/Login';
 import Usuarios from './pages/Usuarios';
 import UsuarioForm from './pages/UsuarioForm';
 import Socios from './pages/Socios';
+import SocioDetalle from './pages/SocioDetalle';
+import Prestamos from './pages/Prestamos';
+import PrestamoDetalle from './pages/PrestamoDetalle';
+import Reportes from './pages/Reportes';
 
 function App() {
   return (
@@ -48,6 +52,42 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Socios />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/socios/:id"
+              element={
+                <ProtectedRoute>
+                  <SocioDetalle />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Préstamos (todos los roles autenticados) */}
+            <Route
+              path="/prestamos"
+              element={
+                <ProtectedRoute>
+                  <Prestamos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/prestamos/:id"
+              element={
+                <ProtectedRoute>
+                  <PrestamoDetalle />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Reportes (solo ADMIN y TESORERO) */}
+            <Route
+              path="/reportes"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
+                  <Reportes />
                 </ProtectedRoute>
               }
             />

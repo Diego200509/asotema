@@ -14,7 +14,10 @@ const Badge = ({
     active: 'badge-active',
     inactive: 'badge-inactive',
     success: 'badge-active',
-    danger: 'badge-inactive'
+    danger: 'badge-inactive',
+    warning: 'badge-warning',
+    info: 'badge-info',
+    secondary: 'badge-secondary'
   };
 
   return (
