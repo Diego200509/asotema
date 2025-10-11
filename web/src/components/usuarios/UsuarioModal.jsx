@@ -23,7 +23,25 @@ const UsuarioModal = ({
     rol: 'CAJERO',
     activo: true,
   });
+  const [originalData, setOriginalData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Función para detectar si hay cambios
+  const hasChanges = () => {
+    if (!isEdit || !originalData) {
+      // Para nuevos usuarios, verificar si hay datos en los campos
+      return formData.nombre.trim() !== '' || 
+             formData.correo.trim() !== '' || 
+             formData.password.trim() !== '';
+    }
+
+    // Para edición, comparar con datos originales
+    return formData.nombre !== originalData.nombre ||
+           formData.correo !== originalData.correo ||
+           formData.rol !== originalData.rol ||
+           formData.activo !== originalData.activo ||
+           (formData.password && formData.password.trim() !== '');
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -31,13 +49,15 @@ const UsuarioModal = ({
         fetchUsuario();
       } else {
         // Reset form for new user
-        setFormData({
+        const newUserData = {
           nombre: '',
           correo: '',
           password: '',
           rol: 'CAJERO',
           activo: true,
-        });
+        };
+        setFormData(newUserData);
+        setOriginalData(null); // No hay datos originales para nuevos usuarios
       }
     }
   }, [isOpen, isEdit, usuarioId]);
@@ -48,13 +68,15 @@ const UsuarioModal = ({
       const response = await axios.get(`/usuarios/${usuarioId}`);
       if (response.data.success) {
         const usuario = response.data.data;
-        setFormData({
+        const userData = {
           nombre: usuario.nombre,
           correo: usuario.correo,
           password: '', // No mostrar la contraseña
           rol: usuario.rol,
           activo: usuario.activo,
-        });
+        };
+        setFormData(userData);
+        setOriginalData(userData); // Guardar datos originales para comparación
       }
     } catch (error) {
       console.error('Error al cargar usuario:', error);
@@ -142,7 +164,7 @@ const UsuarioModal = ({
               <Button
                 type="submit"
                 variant="primary"
-                disabled={loading}
+                disabled={loading || !hasChanges()}
                 loading={loading}
                 className="flex-1"
               >

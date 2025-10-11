@@ -9,6 +9,7 @@ import UsuarioSearch from '../components/usuarios/UsuarioSearch';
 import UsuarioTable from '../components/usuarios/UsuarioTable';
 import UsuarioPagination from '../components/usuarios/UsuarioPagination';
 import UsuarioModal from '../components/usuarios/UsuarioModal';
+import ConfirmModal from '../components/shared/ConfirmModal';
 
 const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -18,8 +19,11 @@ const Usuarios = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [perPage] = useState(6);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingUsuarioId, setEditingUsuarioId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUsuarioId, setEditingUsuarioId] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingUsuario, setDeletingUsuario] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
     const navigate = useNavigate();
     const { logout, user } = useAuth();
     const { showSuccess, showError } = useToast();
@@ -56,21 +60,35 @@ const Usuarios = () => {
         setCurrentPage(1);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿Estás seguro de eliminar este usuario?')) {
-            return;
-        }
+    const handleDelete = (id) => {
+        const usuario = usuarios.find(u => u.id === id);
+        setDeletingUsuario(usuario);
+        setIsDeleteModalOpen(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!deletingUsuario) return;
+        
+        setDeleteLoading(true);
         try {
-            const response = await axios.delete(`/usuarios/${id}`);
+            const response = await axios.delete(`/usuarios/${deletingUsuario.id}`);
             if (response.data.success) {
                 showSuccess('Usuario eliminado exitosamente');
                 fetchUsuarios();
+                setIsDeleteModalOpen(false);
+                setDeletingUsuario(null);
             }
         } catch (error) {
             console.error('Error al eliminar usuario:', error);
             showError('Error al eliminar usuario');
+        } finally {
+            setDeleteLoading(false);
         }
+    };
+
+    const cancelDelete = () => {
+        setIsDeleteModalOpen(false);
+        setDeletingUsuario(null);
     };
 
     const handleLogout = async () => {
@@ -136,6 +154,19 @@ const Usuarios = () => {
         onClose={handleModalClose}
         usuarioId={editingUsuarioId}
         onSuccess={handleModalSuccess}
+      />
+
+      {/* Modal de confirmación para eliminar usuario */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Eliminar Usuario"
+        message={`¿Estás seguro de que deseas eliminar al usuario "${deletingUsuario?.nombre}"? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={deleteLoading}
       />
     </Layout>
   );

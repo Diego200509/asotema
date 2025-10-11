@@ -75,9 +75,13 @@ const Pagination = ({
               onClick={() => onPageChange(page)}
               className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm ${
                 page === currentPage
-                  ? 'bg-primary text-white border border-primary font-semibold'
+                  ? 'text-white border font-semibold'
                   : 'text-gray-800 bg-white border border-gray-400 hover:bg-gray-100 hover:border-gray-500'
               }`}
+              style={page === currentPage ? {
+                backgroundColor: '#16A34A',
+                borderColor: '#16A34A'
+              } : {}}
             >
               {page}
             </button>

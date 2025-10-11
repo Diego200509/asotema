@@ -11,3 +11,4 @@ export { default as Header } from './Header';
 export { default as Toast } from './Toast';
 export { default as ToastContainer } from './ToastContainer';
 export { default as Pagination } from './Pagination';
+export { default as ConfirmModal } from './ConfirmModal';

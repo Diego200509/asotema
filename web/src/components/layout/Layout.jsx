@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
   const [activeSection, setActiveSection] = useState('usuarios');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -18,6 +19,10 @@ const Layout = ({ children }) => {
     setActiveSection(section);
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Sidebar fijo */}
@@ -26,6 +31,8 @@ const Layout = ({ children }) => {
           activeSection={activeSection} 
           onSectionChange={handleSectionChange}
           onLogout={handleLogout}
+          collapsed={sidebarCollapsed}
+          onToggle={toggleSidebar}
         />
       </div>
       
