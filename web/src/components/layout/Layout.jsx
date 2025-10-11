@@ -20,6 +20,8 @@ const Layout = ({ children }) => {
           setActiveSection('socios');
         } else if (path.startsWith('/prestamos')) {
           setActiveSection('prestamos');
+        } else if (path.startsWith('/ahorros')) {
+          setActiveSection('ahorros');
         } else if (path.startsWith('/reportes')) {
           setActiveSection('reportes');
         }
@@ -39,6 +41,8 @@ const Layout = ({ children }) => {
           navigate('/socios');
         } else if (section === 'prestamos') {
           navigate('/prestamos');
+        } else if (section === 'ahorros') {
+          navigate('/ahorros/historico');
         } else if (section === 'reportes') {
           navigate('/reportes');
         }

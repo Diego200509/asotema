@@ -4,11 +4,37 @@ import { useToast } from '../../context/ToastContext';
 import axios from '../../config/axios';
 import Badge from '../shared/Badge';
 import Button from '../shared/Button';
+import AhorrosResumen from '../ahorros/AhorrosResumen';
+import AhorrosTable from '../ahorros/AhorrosTable';
+import AhorrosFiltros from '../ahorros/AhorrosFiltros';
+import Pagination from '../shared/Pagination';
+import { ahorrosAPI } from '../../services/api/ahorros';
 
 const SocioDetalleTabs = ({ socio }) => {
   const [activeTab, setActiveTab] = useState('datos');
   const [estadoCuenta, setEstadoCuenta] = useState(null);
   const [loadingEstado, setLoadingEstado] = useState(false);
+  const [paginationMovimientos, setPaginationMovimientos] = useState({
+    current_page: 1,
+    per_page: 6,
+    total: 0
+  });
+  
+  // Estados para la pestaña de ahorros
+  const [aportesAhorro, setAportesAhorro] = useState([]);
+  const [loadingAportes, setLoadingAportes] = useState(false);
+  const [paginationAhorro, setPaginationAhorro] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 15,
+    total: 0
+  });
+  const [filtrosAhorro, setFiltrosAhorro] = useState({
+    socio_id: '',
+    mes: '',
+    tipo: '',
+    q: ''
+  });
   
   const { user } = useAuth();
   const { showError } = useToast();
@@ -49,6 +75,64 @@ const SocioDetalleTabs = ({ socio }) => {
     }
   };
 
+  // Función para cargar aportes de ahorro
+  const fetchAportesAhorro = async () => {
+    if (!socio?.id) return;
+    
+    setLoadingAportes(true);
+    try {
+      // Forzar el filtro por socio_id
+      const params = {
+        socio_id: socio.id,
+        mes: filtrosAhorro.mes || '',
+        tipo: filtrosAhorro.tipo || '',
+        q: filtrosAhorro.q || '',
+        page: paginationAhorro.current_page,
+        per_page: paginationAhorro.per_page
+      };
+      
+      const response = await ahorrosAPI.getAportes(params);
+      
+      if (response.success) {
+        setAportesAhorro(response.data.data || []);
+        setPaginationAhorro({
+          current_page: response.data.current_page,
+          last_page: response.data.last_page,
+          per_page: response.data.per_page,
+          total: response.data.total
+        });
+      }
+    } catch (error) {
+      console.error('Error al cargar aportes de ahorro:', error);
+      showError('Error al cargar los aportes de ahorro');
+    } finally {
+      setLoadingAportes(false);
+    }
+  };
+
+  // Función para manejar cambio de página
+  const handlePageChangeAhorro = (page) => {
+    setPaginationAhorro(prev => ({
+      ...prev,
+      current_page: page
+    }));
+  };
+
+  // Función para manejar cambio de página de movimientos
+  const handlePageChangeMovimientos = (page) => {
+    setPaginationMovimientos(prev => ({
+      ...prev,
+      current_page: page
+    }));
+  };
+
+  // Cargar aportes cuando cambie la pestaña, filtros o página
+  React.useEffect(() => {
+    if (activeTab === 'ahorros') {
+      fetchAportesAhorro();
+    }
+  }, [activeTab, filtrosAhorro, paginationAhorro.current_page, socio?.id]);
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (tab === 'estado' && !estadoCuenta) {
@@ -86,6 +170,7 @@ const SocioDetalleTabs = ({ socio }) => {
   const tabs = [
     { id: 'datos', label: 'Datos' },
     { id: 'prestamos', label: 'Préstamos' },
+    { id: 'ahorros', label: 'Ahorros' },
     { id: 'estado', label: 'Estado de Cuenta' }
   ];
 
@@ -113,7 +198,8 @@ const SocioDetalleTabs = ({ socio }) => {
       {/* Tab Content */}
       <div>
         {activeTab === 'datos' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
                 Información Personal
@@ -168,10 +254,11 @@ const SocioDetalleTabs = ({ socio }) => {
               </div>
             </div>
           </div>
+          </div>
         )}
 
         {activeTab === 'prestamos' && (
-          <div>
+          <div className="h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-semibold text-gray-900">
                 Préstamos del Socio
@@ -192,8 +279,8 @@ const SocioDetalleTabs = ({ socio }) => {
         )}
 
         {activeTab === 'estado' && (
-          <div>
-            <div className="flex justify-between items-center mb-4">
+          <div className="space-y-6 h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex justify-between items-center">
               <h4 className="text-lg font-semibold text-gray-900">
                 Estado de Cuenta
               </h4>
@@ -212,7 +299,7 @@ const SocioDetalleTabs = ({ socio }) => {
                 <p className="text-gray-600">Cargando estado de cuenta...</p>
               </div>
             ) : estadoCuenta ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {/* Resumen */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h5 className="font-semibold text-blue-900 mb-2">Resumen de la Cuenta</h5>
@@ -244,9 +331,9 @@ const SocioDetalleTabs = ({ socio }) => {
                     <h5 className="font-semibold text-gray-900">Movimientos</h5>
                   </div>
                   
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto max-h-[500px] overflow-y-auto custom-scrollbar" style={{ minHeight: '300px' }}>
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gray-50 sticky top-0 z-10">
                         <tr>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                             Fecha
@@ -266,7 +353,10 @@ const SocioDetalleTabs = ({ socio }) => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {estadoCuenta.movimientos?.map((movimiento, index) => (
+                        {estadoCuenta.movimientos?.slice(
+                          (paginationMovimientos.current_page - 1) * paginationMovimientos.per_page,
+                          paginationMovimientos.current_page * paginationMovimientos.per_page
+                        ).map((movimiento, index) => (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-4 py-2 text-sm text-gray-900">
                               {formatDate(movimiento.fecha)}
@@ -290,6 +380,21 @@ const SocioDetalleTabs = ({ socio }) => {
                       </tbody>
                     </table>
                   </div>
+                  
+                  {/* Paginación para movimientos */}
+                  {estadoCuenta?.movimientos && estadoCuenta.movimientos.length > 6 && (
+                    <div className="px-4 py-3 border-t border-gray-200">
+                      <Pagination
+                        currentPage={paginationMovimientos.current_page}
+                        totalPages={Math.ceil(estadoCuenta.movimientos.length / paginationMovimientos.per_page)}
+                        totalItems={estadoCuenta.movimientos.length}
+                        itemsPerPage={paginationMovimientos.per_page}
+                        onPageChange={handlePageChangeMovimientos}
+                        showFirstLast={true}
+                        showPrevNext={true}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -299,7 +404,40 @@ const SocioDetalleTabs = ({ socio }) => {
             )}
           </div>
         )}
+
+        {/* Pestaña Ahorros */}
+        {activeTab === 'ahorros' && (
+          <div className="space-y-6 h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
+            {/* Resumen de ahorros */}
+            <AhorrosResumen socioId={socio.id} />
+
+            {/* Filtros */}
+            <AhorrosFiltros
+              filtros={filtrosAhorro}
+              onFiltrosChange={setFiltrosAhorro}
+              showSocioFilter={false}
+              loading={loadingAportes}
+            />
+
+            {/* Título del historial */}
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900">Historial de Ahorros</h3>
+            </div>
+
+            {/* Tabla de aportes */}
+            <AhorrosTable
+              aportes={aportesAhorro}
+              loading={loadingAportes}
+              onRefresh={fetchAportesAhorro}
+              showSocio={false}
+              allowDelete={false}
+              pagination={paginationAhorro.total > 6 ? paginationAhorro : null}
+              onPageChange={paginationAhorro.total > 6 ? handlePageChangeAhorro : null}
+            />
+          </div>
+        )}
       </div>
+
     </div>
   );
 };

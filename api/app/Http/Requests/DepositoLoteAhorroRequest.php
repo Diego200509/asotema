@@ -1,0 +1,106 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class DepositoLoteAhorroRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return auth()->check() && in_array(auth()->user()->rol, ['ADMIN', 'TESORERO']);
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'mes' => [
+                'required',
+                'date_format:Y-m',
+                'before_or_equal:today'
+            ],
+            'fecha_operacion' => [
+                'required',
+                'date',
+                'before_or_equal:today'
+            ],
+            'monto' => [
+                'required',
+                'numeric',
+                'min:1',
+                'max:10000'
+            ],
+            'socio_ids' => [
+                'required',
+                'array',
+                'min:1'
+            ],
+            'socio_ids.*' => [
+                'integer',
+                'exists:socios,id'
+            ]
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'mes.required' => 'El mes es requerido.',
+            'mes.date_format' => 'El mes debe tener el formato YYYY-MM.',
+            'mes.before_or_equal' => 'El mes no puede ser posterior a hoy.',
+            'fecha_operacion.required' => 'La fecha de operación es requerida.',
+            'fecha_operacion.date' => 'La fecha de operación debe ser una fecha válida.',
+            'fecha_operacion.before_or_equal' => 'La fecha de operación no puede ser posterior a hoy.',
+            'monto.required' => 'El monto es requerido.',
+            'monto.numeric' => 'El monto debe ser un número válido.',
+            'monto.min' => 'El monto mínimo es $1.00.',
+            'monto.max' => 'El monto máximo es $10,000.00.',
+            'socio_ids.required' => 'Debe seleccionar al menos un socio.',
+            'socio_ids.array' => 'Los socios deben ser una lista válida.',
+            'socio_ids.min' => 'Debe seleccionar al menos un socio.',
+            'socio_ids.*.integer' => 'Cada socio debe ser un número entero válido.',
+            'socio_ids.*.exists' => 'Uno o más socios seleccionados no existen.'
+        ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            // Verificar que todos los socios estén activos
+            if ($this->has('socio_ids')) {
+                $sociosInactivos = \App\Models\Socio::whereIn('id', $this->socio_ids)
+                                                   ->where('estado', '!=', 'ACTIVO')
+                                                   ->pluck('id')
+                                                   ->toArray();
+
+                if (!empty($sociosInactivos)) {
+                    $validator->errors()->add('socio_ids', 'Los socios con ID: ' . implode(', ', $sociosInactivos) . ' no están activos.');
+                }
+            }
+
+            // Verificar duplicados en socio_ids
+            if ($this->has('socio_ids')) {
+                $duplicados = array_diff_assoc($this->socio_ids, array_unique($this->socio_ids));
+                if (!empty($duplicados)) {
+                    $validator->errors()->add('socio_ids', 'No se permiten socios duplicados en la lista.');
+                }
+            }
+        });
+    }
+}

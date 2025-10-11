@@ -54,6 +54,16 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
       )
     },
     {
+      id: 'ahorros',
+      label: 'Ahorros',
+      roles: ['ADMIN', 'TESORERO', 'CAJERO'], // Todos pueden ver esta sección
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+        </svg>
+      )
+    },
+    {
       id: 'reportes',
       label: 'Reportes',
       roles: ['ADMIN', 'TESORERO', 'CAJERO'], // Todos pueden ver esta sección
@@ -120,7 +130,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
                 cursor: 'pointer',
                 fontWeight: '500',
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                fontSize: collapsed ? '0.875rem' : '1rem'
+                fontSize: collapsed ? '0.75rem' : '0.875rem'
               }}
               onMouseEnter={(e) => {
                 if (activeSection !== item.id) {
@@ -155,7 +165,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
               backgroundColor: '#DC2626',
               color: '#ffffff',
               padding: collapsed ? '1rem' : '1rem',
-              fontSize: collapsed ? '0.875rem' : '1rem',
+              fontSize: collapsed ? '0.75rem' : '0.875rem',
               fontWeight: '500',
               borderRadius: '0.5rem',
               border: 'none',

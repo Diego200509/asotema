@@ -13,6 +13,7 @@ class Cuenta extends Model
         'propietario_tipo',
         'propietario_id',
         'nombre',
+        'tipo',
     ];
 
     protected $casts = [
@@ -41,6 +42,41 @@ class Cuenta extends Model
     public function scopeSocios($query)
     {
         return $query->where('propietario_tipo', 'SOCIO');
+    }
+
+    /**
+     * Scope para obtener cuentas de ahorro
+     */
+    public function scopeAhorro($query)
+    {
+        return $query->where('tipo', 'AHORRO');
+    }
+
+    /**
+     * Scope para obtener cuentas institucionales
+     */
+    public function scopeInstitucional($query)
+    {
+        return $query->where('tipo', 'INSTITUCIONAL');
+    }
+
+    /**
+     * Scope para obtener cuentas corrientes
+     */
+    public function scopeCorriente($query)
+    {
+        return $query->where('tipo', 'CORRIENTE');
+    }
+
+    /**
+     * Scope para obtener el fondo de ahorros ASOTEMA
+     */
+    public function scopeFondoAhorros($query)
+    {
+        return $query->where('propietario_tipo', 'ASOTEMA')
+                    ->where('propietario_id', null)
+                    ->where('tipo', 'INSTITUCIONAL')
+                    ->where('nombre', 'Fondo de Ahorros ASOTEMA');
     }
 }
 

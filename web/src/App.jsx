@@ -9,6 +9,8 @@ import Socios from './pages/Socios';
 import SocioDetalle from './pages/SocioDetalle';
 import Prestamos from './pages/Prestamos';
 import PrestamoDetalle from './pages/PrestamoDetalle';
+import AhorrosLote from './pages/AhorrosLote';
+import AhorrosHistorico from './pages/AhorrosHistorico';
 import Reportes from './pages/Reportes';
 
 function App() {
@@ -78,6 +80,24 @@ function App() {
               element={
                 <ProtectedRoute>
                   <PrestamoDetalle />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Ahorros (todos los roles autenticados) */}
+            <Route
+              path="/ahorros/lote"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
+                  <AhorrosLote />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ahorros/historico"
+              element={
+                <ProtectedRoute>
+                  <AhorrosHistorico />
                 </ProtectedRoute>
               }
             />

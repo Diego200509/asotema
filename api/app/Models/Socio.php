@@ -90,5 +90,21 @@ class Socio extends Model
     {
         return $query->where('estado', 'INACTIVO');
     }
+
+    /**
+     * Relación con aportes de ahorro
+     */
+    public function aportesAhorro()
+    {
+        return $this->hasMany(AporteAhorro::class);
+    }
+
+    /**
+     * Relación con préstamos
+     */
+    public function prestamos()
+    {
+        return $this->hasMany(Prestamo::class);
+    }
 }
 

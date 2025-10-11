@@ -5,6 +5,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\SocioController;
 use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\ReportesController;
+use App\Http\Controllers\AhorroController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -84,6 +85,24 @@ Route::middleware(['auth:api'])->group(function () {
         Route::middleware(['role:ADMIN,TESORERO'])->group(function () {
             Route::get('/cartera-prestamos', [ReportesController::class, 'carteraPrestamos']);
             Route::get('/ingresos-intereses', [ReportesController::class, 'ingresosIntereses']);
+        });
+    });
+
+    // Rutas CRUD de ahorros
+    Route::prefix('ahorros')->group(function () {
+        // Lectura para todos los roles autenticados
+        Route::get('/', [AhorroController::class, 'index']);
+        Route::get('/estadisticas', [AhorroController::class, 'estadisticas']);
+        Route::get('/socios', [AhorroController::class, 'socios']);
+        Route::get('/socio/{socioId}/resumen', [AhorroController::class, 'resumenSocio']);
+        Route::get('/socio/{socioId}/saldo', [AhorroController::class, 'saldoSocio']);
+
+        // Crear, editar y eliminar solo para ADMIN y TESORERO
+        Route::middleware(['role:ADMIN,TESORERO'])->group(function () {
+            Route::post('/deposito', [AhorroController::class, 'deposito']);
+            Route::post('/deposito-lote', [AhorroController::class, 'depositoLote']);
+            Route::post('/retiro', [AhorroController::class, 'retiro']);
+            Route::delete('/{id}', [AhorroController::class, 'destroy']);
         });
     });
 });
