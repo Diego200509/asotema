@@ -5,43 +5,44 @@ import Select from '../shared/Select';
 const SocioFormFields = ({ formData, onChange, isEdit = false }) => {
   return (
     <div className="space-y-4">
-      {/* Primera fila: Cédula y Código (solo en edición) */}
-      {isEdit ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Cédula"
-            name="cedula"
-            value={formData.cedula}
-            onChange={onChange}
-            placeholder="0123456789"
-            required
-          />
-          
-          <Input
-            label="Código"
-            name="codigo"
-            value={formData.codigo || ''}
-            disabled
-            placeholder="SOC-001"
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          <Input
-            label="Cédula"
-            name="cedula"
-            value={formData.cedula}
-            onChange={onChange}
-            placeholder="0123456789"
-            required
-          />
-        </div>
-      )}
+          {/* Primera fila: Cédula y Código (solo en edición) */}
+          {isEdit ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Cédula"
+                name="cedula"
+                value={formData.cedula}
+                onChange={onChange}
+                placeholder="1234567890"
+                disabled
+              />
+              
+              <Input
+                label="Código"
+                name="codigo"
+                value={formData.codigo || ''}
+                disabled
+                placeholder="SOC-001"
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              <Input
+                label="Cédula *"
+                name="cedula"
+                value={formData.cedula}
+                onChange={onChange}
+                placeholder="1234567890"
+                maxLength="10"
+                required
+              />
+            </div>
+          )}
 
       {/* Segunda fila: Nombres y Apellidos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          label="Nombres"
+          label="Nombres *"
           name="nombres"
           value={formData.nombres}
           onChange={onChange}
@@ -50,7 +51,7 @@ const SocioFormFields = ({ formData, onChange, isEdit = false }) => {
         />
         
         <Input
-          label="Apellidos"
+          label="Apellidos *"
           name="apellidos"
           value={formData.apellidos}
           onChange={onChange}
@@ -61,34 +62,39 @@ const SocioFormFields = ({ formData, onChange, isEdit = false }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          label="Teléfono"
+          label="Teléfono *"
           name="telefono"
           value={formData.telefono}
           onChange={onChange}
           placeholder="0987654321"
+          maxLength="10"
+          required
         />
         
         <Input
-          label="Correo Electrónico"
+          label="Correo Electrónico *"
           name="correo"
           type="email"
           value={formData.correo}
           onChange={onChange}
           placeholder="socio@ejemplo.com"
+          required
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
-          label="Fecha de Ingreso"
+          label="Fecha de Ingreso *"
           name="fecha_ingreso"
           type="date"
           value={formData.fecha_ingreso ? formData.fecha_ingreso.split('T')[0] : ''}
           onChange={onChange}
+          max={new Date().toISOString().split('T')[0]}
+          required
         />
         
         <Select
-          label="Estado"
+          label="Estado *"
           name="estado"
           value={formData.estado}
           onChange={onChange}

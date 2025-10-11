@@ -4,6 +4,7 @@ import axios from '../../config/axios';
 import Modal from '../shared/Modal';
 import SocioFormFields from './SocioFormFields';
 import Button from '../shared/Button';
+import { validateCedulaEcuatoriana } from '../../utils/cedulaValidator';
 
 const SocioModal = ({ 
   isOpen, 
@@ -56,10 +57,10 @@ const SocioModal = ({
           telefono: '',
           correo: '',
           estado: 'ACTIVO',
-          fecha_ingreso: '',
+          fecha_ingreso: new Date().toISOString().split('T')[0], // Default to today
         };
         setFormData(newSocioData);
-        setOriginalData(null);
+        setOriginalData(newSocioData); // Set original data for hasChanges validation
       }
     }
   }, [isOpen, isEdit, socioId]);
@@ -105,14 +106,21 @@ const SocioModal = ({
     setLoading(true);
 
     try {
+      // Validar cédula ecuatoriana solo al crear (no al editar)
+      if (!isEdit && !validateCedulaEcuatoriana(formData.cedula)) {
+        showError('La cédula no es válida según el código verificador ecuatoriano.');
+        setLoading(false);
+        return;
+      }
+
       const dataToSend = {
         cedula: formData.cedula,
         nombres: formData.nombres,
         apellidos: formData.apellidos,
-        telefono: formData.telefono || null,
-        correo: formData.correo || null,
+        telefono: formData.telefono,
+        correo: formData.correo,
         estado: formData.estado,
-        fecha_ingreso: formData.fecha_ingreso || null,
+        fecha_ingreso: formData.fecha_ingreso,
       };
 
       const response = isEdit
