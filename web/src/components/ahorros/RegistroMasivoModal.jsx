@@ -136,9 +136,9 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
       isOpen={isOpen}
       onClose={onClose}
       title="Registrar Ahorros Masivos"
-      size="md"
+      size="lg"
     >
-      <div className="bg-white max-h-[60vh] overflow-y-auto p-6">
+      <div className="bg-white max-h-[80vh] overflow-y-auto p-6">
         {/* Header informativo */}
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-6">
           <div className="flex items-start">
@@ -163,7 +163,7 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Campos principales en grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MonthPicker
               label="Mes"
               name="mes"
@@ -187,19 +187,21 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
+            
+            {/* Monto */}
+            <div className="md:col-span-2 lg:col-span-1">
+              <MoneyInput
+                label="Monto por Socio"
+                name="monto"
+                value={formData.monto}
+                onChange={handleChange}
+                placeholder="100.00"
+                required
+                min={1}
+                max={10000}
+              />
+            </div>
           </div>
-
-          {/* Monto */}
-          <MoneyInput
-            label="Monto por Socio"
-            name="monto"
-            value={formData.monto}
-            onChange={handleChange}
-            placeholder="100.00"
-            required
-            min={1}
-            max={10000}
-          />
 
           {/* Notas */}
           <div>
@@ -229,7 +231,7 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
               label="Socios a Registrar"
               placeholder="Buscar por nombre o cédula..."
               loading={loadingSocios}
-              maxHeight="300px"
+              maxHeight="400px"
             />
           </div>
 
@@ -300,23 +302,25 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex gap-4 pt-6 border-t border-gray-200">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={!isFormValid() || loading}
+              loading={loading}
+              className="flex-1"
+            >
+              {loading ? 'Registrando...' : 'Registrar Ahorros'}
+            </Button>
+            
             <Button
               type="button"
               variant="secondary"
               onClick={onClose}
               disabled={loading}
+              className="flex-1"
             >
               Cancelar
-            </Button>
-            
-            <Button
-              type="submit"
-              disabled={!isFormValid() || loading}
-              loading={loading}
-              className="min-w-[140px]"
-            >
-              {loading ? 'Registrando...' : 'Registrar Ahorros'}
             </Button>
           </div>
         </form>

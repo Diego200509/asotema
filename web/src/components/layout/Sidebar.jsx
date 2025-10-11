@@ -34,26 +34,6 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
       )
     },
     {
-      id: 'productos',
-      label: 'Productos',
-      roles: ['ADMIN', 'TESORERO', 'CAJERO'], // Todos pueden ver esta sección
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      )
-    },
-    {
-      id: 'ventas',
-      label: 'Ventas',
-      roles: ['ADMIN', 'TESORERO', 'CAJERO'], // Todos pueden ver esta sección
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-        </svg>
-      )
-    },
-    {
       id: 'ahorros',
       label: 'Ahorros',
       roles: ['ADMIN', 'TESORERO', 'CAJERO'], // Todos pueden ver esta sección
@@ -84,8 +64,8 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
     <aside className={`bg-white border-r border-gray-200 shadow-sm h-screen flex flex-col transition-all duration-300 ${
       collapsed ? 'w-20' : 'w-80'
     }`}>
-      <div className={`flex-1 ${collapsed ? 'p-3' : 'p-8'}`}>
-        {/* Logo y botón toggle */}
+      {/* Logo y botón toggle - Fijo */}
+      <div className={`${collapsed ? 'p-3' : 'p-8'} flex-shrink-0`}>
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <img 
@@ -108,9 +88,11 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Menú de navegación */}
-        <nav className="space-y-2">
+      {/* Menú de navegación - Con scroll */}
+      <nav className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${collapsed ? 'px-3' : 'px-8'} pb-4`}>
+        <div className="space-y-2">
           {filteredMenuItems.map((item) => (
             <button
               key={item.id}
@@ -152,11 +134,11 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
               {!collapsed && <span>{item.label}</span>}
             </button>
           ))}
-        </nav>
-      </div>
+        </div>
+      </nav>
 
-      {/* Sección inferior solo con cerrar sesión */}
-      <div className={`border-t border-gray-200 ${collapsed ? 'p-3' : 'p-8'}`}>
+      {/* Sección inferior solo con cerrar sesión - Fija */}
+      <div className={`border-t border-gray-200 ${collapsed ? 'p-3' : 'p-8'} flex-shrink-0`}>
         {onLogout && (
           <button
             onClick={onLogout}
