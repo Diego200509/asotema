@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Usuarios from './pages/Usuarios';
 import UsuarioForm from './pages/UsuarioForm';
+import Socios from './pages/Socios';
 
 function App() {
   return (
@@ -41,11 +42,21 @@ function App() {
               }
             />
 
-            {/* Ruta raíz redirige a usuarios */}
-            <Route path="/" element={<Navigate to="/usuarios" replace />} />
+            {/* Rutas de Socios (todos los roles autenticados) */}
+            <Route
+              path="/socios"
+              element={
+                <ProtectedRoute>
+                  <Socios />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Ruta raíz redirige a socios */}
+            <Route path="/" element={<Navigate to="/socios" replace />} />
 
             {/* Ruta 404 */}
-            <Route path="*" element={<Navigate to="/usuarios" replace />} />
+            <Route path="*" element={<Navigate to="/socios" replace />} />
           </Routes>
         </AuthProvider>
       </ToastProvider>

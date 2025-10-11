@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../shared/Header';
 import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
-  const [activeSection, setActiveSection] = useState('usuarios');
+  const location = useLocation();
+  const [activeSection, setActiveSection] = useState('socios');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // Detectar la sección activa según la ruta actual
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/usuarios')) {
+      setActiveSection('usuarios');
+    } else if (path.startsWith('/socios')) {
+      setActiveSection('socios');
+    }
+  }, [location]);
 
   const handleLogout = async () => {
     await logout();
@@ -17,6 +28,13 @@ const Layout = ({ children }) => {
 
   const handleSectionChange = (section) => {
     setActiveSection(section);
+    // Navegar a la sección correspondiente
+    if (section === 'usuarios') {
+      navigate('/usuarios');
+    } else if (section === 'socios') {
+      navigate('/socios');
+    }
+    // Agregar más secciones según sea necesario
   };
 
   const toggleSidebar = () => {

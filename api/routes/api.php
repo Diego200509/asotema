@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\SocioController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +39,20 @@ Route::middleware(['auth:api'])->group(function () {
             Route::get('/{id}', [UsuarioController::class, 'show']);
             Route::put('/{id}', [UsuarioController::class, 'update']);
             Route::delete('/{id}', [UsuarioController::class, 'destroy']);
+        });
+    });
+
+    // Rutas CRUD de socios
+    Route::prefix('socios')->group(function () {
+        // Lectura para todos los roles autenticados
+        Route::get('/', [SocioController::class, 'index']);
+        Route::get('/{socio}', [SocioController::class, 'show']);
+
+        // Crear, editar y eliminar solo para ADMIN y TESORERO
+        Route::middleware(['role:ADMIN,TESORERO'])->group(function () {
+            Route::post('/', [SocioController::class, 'store']);
+            Route::put('/{socio}', [SocioController::class, 'update']);
+            Route::delete('/{socio}', [SocioController::class, 'destroy']);
         });
     });
 });
