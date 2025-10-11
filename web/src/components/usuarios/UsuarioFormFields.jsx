@@ -1,5 +1,6 @@
 import React from 'react';
 import Input from '../shared/Input';
+import PasswordInput from '../shared/PasswordInput';
 import Select from '../shared/Select';
 import Switch from '../shared/Switch';
 
@@ -38,17 +39,20 @@ const UsuarioFormFields = ({
       />
 
       {/* Contraseña */}
-      <Input
+      <PasswordInput
         label="Contraseña"
         name="password"
-        type="password"
         value={formData.password}
         onChange={onChange}
         placeholder="Mínimo 6 caracteres"
         required={!isEdit}
         minLength={6}
-        helperText={isEdit ? "Dejar en blanco para mantener la actual" : ""}
       />
+      {isEdit && (
+        <p className="text-xs text-gray-500 mt-1">
+          Dejar en blanco para mantener la actual
+        </p>
+      )}
 
       {/* Rol */}
       <Select

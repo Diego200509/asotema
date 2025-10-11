@@ -1,25 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import LoginHeader from '../components/login/LoginHeader';
 import LoginCard from '../components/login/LoginCard';
 
 const Login = () => {
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   const handleSubmit = async ({ correo, password }) => {
-    setError('');
     setLoading(true);
 
     const result = await login(correo, password);
 
     if (result.success) {
+      showSuccess('¡Bienvenido! Sesión iniciada correctamente');
       navigate('/usuarios');
     } else {
-      setError(result.message);
+      showError(result.message);
     }
 
     setLoading(false);
@@ -32,7 +33,6 @@ const Login = () => {
         <LoginCard 
           onSubmit={handleSubmit}
           loading={loading}
-          error={error}
         />
       </div>
     </div>

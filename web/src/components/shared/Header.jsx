@@ -24,14 +24,29 @@ const Header = ({
               </div>
             )}
             {onLogout && (
-              <Button
-                variant="danger"
-                size="sm"
+              <button
                 onClick={onLogout}
-                className="px-4 py-2 text-sm font-medium text-danger-700 bg-danger-50 border border-danger-200 rounded-lg hover:bg-danger-100 transition shadow-soft"
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#ffffff',
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#b91c1c';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#DC2626';
+                }}
               >
                 Cerrar Sesión
-              </Button>
+              </button>
             )}
             {children}
           </div>

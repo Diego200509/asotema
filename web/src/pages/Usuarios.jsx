@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import axios from '../config/axios';
 import Header from '../components/shared/Header';
 import Card from '../components/shared/Card';
@@ -17,6 +18,7 @@ const Usuarios = () => {
   const [perPage] = useState(10);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     fetchUsuarios();
@@ -57,11 +59,12 @@ const Usuarios = () => {
     try {
       const response = await axios.delete(`/usuarios/${id}`);
       if (response.data.success) {
+        showSuccess('Usuario eliminado exitosamente');
         fetchUsuarios();
       }
     } catch (error) {
       console.error('Error al eliminar usuario:', error);
-      alert('Error al eliminar usuario');
+      showError('Error al eliminar usuario');
     }
   };
 

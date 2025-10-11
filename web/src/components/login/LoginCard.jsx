@@ -3,7 +3,7 @@ import Card from '../shared/Card';
 import LoginForm from './LoginForm';
 import LoginCredentials from './LoginCredentials';
 
-const LoginCard = ({ onSubmit, loading, error }) => {
+const LoginCard = ({ onSubmit, loading }) => {
   return (
     <Card padding="lg">
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">
@@ -13,7 +13,6 @@ const LoginCard = ({ onSubmit, loading, error }) => {
       <LoginForm 
         onSubmit={onSubmit}
         loading={loading}
-        error={error}
       />
       
       <LoginCredentials />

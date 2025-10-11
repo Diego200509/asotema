@@ -30,7 +30,7 @@ const Input = ({
         {...props}
       />
       {error && (
-        <p className="mt-1 text-sm text-danger">{error}</p>
+        <p className="mt-1 text-sm text-danger-700">{error}</p>
       )}
     </div>
   );

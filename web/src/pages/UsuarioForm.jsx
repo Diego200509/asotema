@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import axios from '../config/axios';
 import Header from '../components/shared/Header';
 import Card from '../components/shared/Card';
@@ -13,6 +14,7 @@ const UsuarioForm = () => {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -78,11 +80,14 @@ const UsuarioForm = () => {
         : await axios.post('/usuarios', dataToSend);
 
       if (response.data.success) {
+        showSuccess(isEdit ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente');
         navigate('/usuarios');
       }
     } catch (error) {
       console.error('Error al guardar usuario:', error);
-      setError(error.response?.data?.message || 'Error al guardar usuario');
+      const errorMessage = error.response?.data?.message || 'Error al guardar usuario';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }

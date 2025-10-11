@@ -1,23 +1,33 @@
 import React, { useState } from 'react';
 import Input from '../shared/Input';
-import Button from '../shared/Button';
-import Alert from '../shared/Alert';
+import PasswordInput from '../shared/PasswordInput';
 
-const LoginForm = ({ onSubmit, loading = false, error = '' }) => {
+const LoginForm = ({ onSubmit, loading = false }) => {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // Validación básica antes de enviar
+    if (!correo || !password) {
+      return;
+    }
+    
     onSubmit({ correo, password });
+    
+    // Limpiar los campos después del envío
+    setCorreo('');
+    setPassword('');
+  };
+
+  const handleForgotPassword = () => {
+    alert('Funcionalidad de recuperación de contraseña en desarrollo');
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
-        <Alert type="error">{error}</Alert>
-      )}
-
       <Input
         label="Correo Electrónico"
         type="email"
@@ -27,24 +37,54 @@ const LoginForm = ({ onSubmit, loading = false, error = '' }) => {
         required
       />
 
-      <Input
+      <PasswordInput
         label="Contraseña"
-        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="••••••••"
         required
       />
 
-      <Button
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={handleForgotPassword}
+          className="text-sm text-danger hover:text-danger-700 transition"
+        >
+          ¿Olvidó su contraseña?
+        </button>
+      </div>
+
+      <button
         type="submit"
-        variant="primary"
-        loading={loading}
         disabled={loading}
-        className="w-full"
+        style={{
+          width: '100%',
+          backgroundColor: loading ? '#9ca3af' : '#16A34A',
+          color: '#ffffff',
+          padding: '0.625rem 1.5rem',
+          fontSize: '0.875rem',
+          fontWeight: '500',
+          borderRadius: '0.5rem',
+          border: 'none',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          transition: 'all 0.2s',
+          opacity: loading ? 0.5 : 1,
+          boxShadow: '0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}
+        onMouseEnter={(e) => {
+          if (!loading) {
+            e.target.style.backgroundColor = '#15803d';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!loading) {
+            e.target.style.backgroundColor = '#16A34A';
+          }
+        }}
       >
-        Iniciar Sesión
-      </Button>
+        {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+      </button>
     </form>
   );
 };
