@@ -68,20 +68,28 @@ class PrestamoService
         // Interés fijo del 1% sobre el capital total
         $interesFijo = $capital * $tasa;
         
-        // Capital dividido en partes iguales
+        // Calcular cuota fija redondeada a 2 decimales
         $capitalPorCuota = $capital / $plazo;
+        $cuotaFija = round($capitalPorCuota + $interesFijo, 2);
         
-        // Cuota fija = Capital + Interés fijo
-        $cuotaFija = $capitalPorCuota + $interesFijo;
+        // Calcular el total esperado
+        $totalEsperado = round($cuotaFija * $plazo, 2);
+        
+        // Calcular diferencia para ajustar la última cuota
+        $diferencia = $totalEsperado - ($capital + $interesFijo * $plazo);
 
         // Saldo pendiente para cálculos
         $saldoPendiente = $capital;
 
         for ($i = 1; $i <= $plazo; $i++) {
-            // Para la última cuota, ajustar el capital para que no quede saldo
-            $capitalCuota = $capitalPorCuota;
+            // Para la última cuota, ajustar para que el total sea exacto
             if ($i == $plazo) {
+                // Ajustar la última cuota para que el total sea exacto
                 $capitalCuota = $saldoPendiente;
+                $cuotaFijaAjustada = round($capitalCuota + $interesFijo - $diferencia, 2);
+            } else {
+                $capitalCuota = round($capital / $plazo, 2);
+                $cuotaFijaAjustada = $cuotaFija;
             }
 
             // Fecha de vencimiento (mes siguiente)
@@ -92,7 +100,7 @@ class PrestamoService
                 'prestamo_id' => $prestamo->id,
                 'numero_cuota' => $i,
                 'fecha_vencimiento' => $fechaVencimiento,
-                'monto_esperado' => $cuotaFija,
+                'monto_esperado' => $cuotaFijaAjustada,
                 'parte_interes' => $interesFijo, // Interés fijo en todas las cuotas
                 'parte_capital' => $capitalCuota,
                 'monto_pagado' => 0,
