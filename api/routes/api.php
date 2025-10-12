@@ -59,8 +59,10 @@ Route::middleware(['auth:api'])->group(function () {
         });
     });
 
-    // Ruta para generar PDF del estado de cuenta (fuera del grupo auth:api)
+    // Rutas para generar PDFs (fuera del grupo auth:api)
     Route::get('/socios/{socio}/estado-cuenta/pdf', [SocioController::class, 'estadoCuentaPDF'])->middleware('jwt.auth');
+    Route::get('/socios/{socio}/reporte-ahorros/pdf', [SocioController::class, 'reporteAhorrosPDF'])->middleware('jwt.auth');
+    Route::get('/socios/{socio}/reporte-prestamos/pdf', [SocioController::class, 'reportePrestamosPDF'])->middleware('jwt.auth');
 
     // Rutas CRUD de préstamos
     Route::prefix('prestamos')->group(function () {

@@ -179,25 +179,20 @@ class AhorroService
     }
 
     /**
-     * Obtener saldo de ahorro de un socio
+     * Obtener saldo de ahorro de un socio (solo ahorros, no préstamos)
      */
     public function saldoAhorro(int $socioId): float
     {
-        $socio = Socio::find($socioId);
-        if (!$socio) {
-            return 0;
-        }
+        // Calcular solo los ahorros (depósitos - retiros)
+        $totalDepositos = AporteAhorro::where('socio_id', $socioId)
+                                     ->where('tipo', 'DEPOSITO')
+                                     ->sum('monto');
 
-        $cuentaAhorro = Cuenta::where('propietario_tipo', 'SOCIO')
-                             ->where('propietario_id', $socioId)
-                             ->where('tipo', 'CORRIENTE')
-                             ->first();
+        $totalRetiros = AporteAhorro::where('socio_id', $socioId)
+                                   ->where('tipo', 'RETIRO')
+                                   ->sum('monto');
 
-        if (!$cuentaAhorro) {
-            return 0;
-        }
-
-        return $this->contabilidadService->saldoCuenta($cuentaAhorro->id);
+        return (float) $totalDepositos - (float) $totalRetiros;
     }
 
     /**
@@ -220,6 +215,14 @@ class AhorroService
         $totalRetiros = AporteAhorro::where('socio_id', $socioId)
                                    ->where('tipo', 'RETIRO')
                                    ->sum('monto');
+
+        // Total de aportes
+        $totalAportes = AporteAhorro::where('socio_id', $socioId)->count();
+
+        // Último aporte
+        $ultimoAporte = AporteAhorro::where('socio_id', $socioId)
+                                   ->orderBy('fecha_operacion', 'desc')
+                                   ->first();
 
         // Histórico por mes
         $historicoPorMes = AporteAhorro::where('socio_id', $socioId)
@@ -248,6 +251,8 @@ class AhorroService
             'saldo_actual' => $saldoActual,
             'total_depositos' => (float) $totalDepositos,
             'total_retiros' => (float) $totalRetiros,
+            'total_aportes' => $totalAportes,
+            'ultimo_aporte' => $ultimoAporte ? \Carbon\Carbon::parse($ultimoAporte->fecha_operacion . 'T00:00:00-05:00')->format('Y-m-d') : null,
             'historico_por_mes' => $historicoPorMes
         ];
     }

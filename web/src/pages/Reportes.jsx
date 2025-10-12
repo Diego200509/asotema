@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/shared/Card';
+import EstadosCuentaReportes from '../components/reportes/EstadosCuentaReportes';
 
 const Reportes = () => {
+  const [activeReport, setActiveReport] = useState(null);
+
+  const handleReportClick = (reportType) => {
+    setActiveReport(reportType);
+  };
+
+  const handleBack = () => {
+    setActiveReport(null);
+  };
+
+  // Si hay un reporte activo, mostrar el componente correspondiente
+  if (activeReport === 'estados-cuenta') {
+    return (
+      <Layout>
+        <EstadosCuentaReportes />
+      </Layout>
+    );
+  }
+
+  // Vista principal con las tarjetas de reportes
   return (
     <Layout>
       <div className="h-full flex flex-col">
@@ -20,7 +41,10 @@ const Reportes = () => {
               <p className="text-gray-600 mb-4">
                 Reporte de capital pendiente en cartera
               </p>
-              <button className="text-primary-600 hover:text-primary-700 font-medium">
+              <button 
+                onClick={() => handleReportClick('cartera-prestamos')}
+                className="text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
                 Ver Reporte →
               </button>
             </div>
@@ -34,7 +58,10 @@ const Reportes = () => {
               <p className="text-gray-600 mb-4">
                 Reporte de ingresos generados por intereses
               </p>
-              <button className="text-primary-600 hover:text-primary-700 font-medium">
+              <button 
+                onClick={() => handleReportClick('ingresos-intereses')}
+                className="text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
                 Ver Reporte →
               </button>
             </div>
@@ -48,7 +75,10 @@ const Reportes = () => {
               <p className="text-gray-600 mb-4">
                 Estados de cuenta de socios individuales
               </p>
-              <button className="text-primary-600 hover:text-primary-700 font-medium">
+              <button 
+                onClick={() => handleReportClick('estados-cuenta')}
+                className="text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
                 Ver Reporte →
               </button>
             </div>

@@ -248,5 +248,96 @@ class SocioController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generar PDF del reporte de ahorros del socio
+     */
+    public function reporteAhorrosPDF(Socio $socio)
+    {
+        try {
+            // Verificar que el socio existe
+            $socio = Socio::findOrFail($socio->id);
+
+            // Obtener datos de ahorros del socio
+            $ahorrosResponse = app(\App\Http\Controllers\AhorroController::class)->index(request()->merge(['socio_id' => $socio->id]));
+            $resumenResponse = app(\App\Http\Controllers\AhorroController::class)->resumenSocio($socio->id);
+
+            $ahorrosData = $ahorrosResponse->getData();
+            $resumenData = $resumenResponse->getData();
+
+            if (!$ahorrosData->success || !$resumenData->success) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al obtener los datos de ahorros'
+                ], 500);
+            }
+
+            // Generar PDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.reporte-ahorros-socio', [
+                'socio' => $socio,
+                'ahorros' => $ahorrosData->data,
+                'resumen' => $resumenData->data
+            ]);
+
+            $pdf->setPaper('A4', 'portrait');
+
+            $filename = "reporte_ahorros_{$socio->cedula}_{$socio->nombres}_{$socio->apellidos}.pdf";
+            $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
+
+            return $pdf->download($filename);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al generar PDF de ahorros: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el PDF de ahorros',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generar PDF del reporte de préstamos del socio
+     */
+    public function reportePrestamosPDF(Socio $socio)
+    {
+        try {
+            // Verificar que el socio existe
+            $socio = Socio::findOrFail($socio->id);
+
+            // Obtener datos de préstamos del socio
+            $prestamosResponse = app(\App\Http\Controllers\PrestamoController::class)->index(request()->merge(['socio_id' => $socio->id]));
+
+            $prestamosData = $prestamosResponse->getData();
+
+            if (!$prestamosData->success) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al obtener los datos de préstamos'
+                ], 500);
+            }
+
+            // Generar PDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.reporte-prestamos-socio', [
+                'socio' => $socio,
+                'prestamos' => $prestamosData->data
+            ]);
+
+            $pdf->setPaper('A4', 'portrait');
+
+            $filename = "reporte_prestamos_{$socio->cedula}_{$socio->nombres}_{$socio->apellidos}.pdf";
+            $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
+
+            return $pdf->download($filename);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al generar PDF de préstamos: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el PDF de préstamos',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
