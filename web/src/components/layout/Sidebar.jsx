@@ -62,16 +62,16 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
 
   return (
     <aside className={`bg-white border-r border-gray-200 shadow-sm h-screen flex flex-col transition-all duration-300 ${
-      collapsed ? 'w-20' : 'w-80'
+      collapsed ? 'w-20' : 'w-64'
     }`}>
       {/* Logo y botón toggle - Fijo */}
-      <div className={`${collapsed ? 'p-3' : 'p-8'} flex-shrink-0`}>
-        <div className="mb-8">
+      <div className={`${collapsed ? 'p-3' : 'p-6'} flex-shrink-0`}>
+        <div className="mb-6">
           <div className="flex items-center justify-between">
             <img 
               src={asotemaIcon} 
               alt="ASOTEMA" 
-              className={`mx-auto ${collapsed ? 'w-10 h-10' : 'w-16 h-16'}`}
+              className={`mx-auto ${collapsed ? 'w-10 h-10' : 'w-12 h-12'}`}
             />
             <button
               onClick={onToggle}
@@ -91,7 +91,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
       </div>
 
       {/* Menú de navegación - Con scroll */}
-      <nav className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${collapsed ? 'px-3' : 'px-8'} pb-4`}>
+      <nav className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${collapsed ? 'px-3' : 'px-6'} pb-4`}>
         <div className="space-y-2">
           {filteredMenuItems.map((item) => (
             <button
@@ -101,8 +101,8 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                gap: collapsed ? '0' : '1rem',
-                padding: collapsed ? '1rem' : '1rem',
+                gap: collapsed ? '0' : '0.75rem',
+                padding: collapsed ? '0.75rem' : '0.75rem',
                 borderRadius: '0.5rem',
                 textAlign: 'left',
                 transition: 'all 0.2s',
@@ -138,7 +138,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
       </nav>
 
       {/* Sección inferior solo con cerrar sesión - Fija */}
-      <div className={`border-t border-gray-200 ${collapsed ? 'p-3' : 'p-8'} flex-shrink-0`}>
+      <div className={`border-t border-gray-200 ${collapsed ? 'p-3' : 'p-6'} flex-shrink-0`}>
         {onLogout && (
           <button
             onClick={onLogout}
@@ -146,7 +146,7 @@ const Sidebar = ({ activeSection, onSectionChange, onLogout, collapsed, onToggle
               width: '100%',
               backgroundColor: '#DC2626',
               color: '#ffffff',
-              padding: collapsed ? '1rem' : '1rem',
+              padding: collapsed ? '0.75rem' : '0.75rem',
               fontSize: collapsed ? '0.75rem' : '0.875rem',
               fontWeight: '500',
               borderRadius: '0.5rem',
