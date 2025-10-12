@@ -5,6 +5,7 @@ import Modal from '../shared/Modal';
 import SocioFormFields from './SocioFormFields';
 import Button from '../shared/Button';
 import { validateCedulaEcuatoriana } from '../../utils/cedulaValidator';
+import { getCurrentDateEcuador } from '../../utils/dateUtils';
 
 const SocioModal = ({ 
   isOpen, 
@@ -57,7 +58,7 @@ const SocioModal = ({
           telefono: '',
           correo: '',
           estado: 'ACTIVO',
-          fecha_ingreso: new Date().toISOString().split('T')[0], // Default to today
+          fecha_ingreso: getCurrentDateEcuador(), // Default to today in Ecuador timezone
         };
         setFormData(newSocioData);
         setOriginalData(newSocioData); // Set original data for hasChanges validation

@@ -46,7 +46,7 @@ class UpdateSocioRequest extends FormRequest
                 Rule::unique('socios', 'correo')->ignore($socioId),
             ],
             'estado' => ['required', 'in:ACTIVO,INACTIVO'],
-            'fecha_ingreso' => ['required', 'date', 'before_or_equal:today'],
+            'fecha_ingreso' => ['required', 'date', 'before_or_equal:' . now('America/Guayaquil')->toDateString()],
         ];
     }
 

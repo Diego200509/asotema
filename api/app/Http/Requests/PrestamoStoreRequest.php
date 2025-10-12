@@ -56,7 +56,7 @@ class PrestamoStoreRequest extends FormRequest
             'fecha_inicio' => [
                 'required',
                 'date',
-                'date_equals:today'
+                'date_equals:' . now('America/Guayaquil')->toDateString()
             ]
         ];
     }

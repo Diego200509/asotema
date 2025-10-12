@@ -69,11 +69,12 @@ class SocioController extends Controller
                 'fecha_ingreso' => $request->fecha_ingreso,
             ]);
 
-            // Crear cuenta automáticamente para el socio
+            // Crear cuenta CORRIENTE automáticamente para el socio
             Cuenta::create([
                 'propietario_tipo' => 'SOCIO',
                 'propietario_id' => $socio->id,
                 'nombre' => "Cuenta {$socio->nombre_completo}",
+                'tipo' => 'CORRIENTE',
             ]);
 
             DB::commit();

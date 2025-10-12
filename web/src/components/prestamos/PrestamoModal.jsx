@@ -5,7 +5,7 @@ import Modal from '../shared/Modal';
 import PrestamoFormFields from './PrestamoFormFields';
 import CronogramaPreview from './CronogramaPreview';
 import Button from '../shared/Button';
-import { getCurrentDateInEcuador } from '../../utils/dateUtils';
+import { getCurrentDateEcuador } from '../../utils/dateUtils';
 
 const PrestamoModal = ({ isOpen, onClose, onSuccess }) => {
   const { showSuccess, showError } = useToast();
@@ -14,7 +14,7 @@ const PrestamoModal = ({ isOpen, onClose, onSuccess }) => {
     socio_id: '',
     capital: '',
     plazo_meses: '',
-    fecha_inicio: getCurrentDateInEcuador()
+    fecha_inicio: getCurrentDateEcuador()
   });
 
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ const PrestamoModal = ({ isOpen, onClose, onSuccess }) => {
         socio_id: '',
         capital: '',
         plazo_meses: '',
-        fecha_inicio: getCurrentDateInEcuador()
+        fecha_inicio: getCurrentDateEcuador()
       });
     }
   }, [isOpen]);

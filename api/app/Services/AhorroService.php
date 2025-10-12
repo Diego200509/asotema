@@ -43,8 +43,8 @@ class AhorroService
                 throw new \Exception("Ya existe un depósito para este socio en el mes especificado");
             }
 
-            // Obtener o crear la cuenta de ahorro del socio
-            $cuentaSocio = $this->obtenerOCrearCuentaAhorro($socio);
+            // Obtener la cuenta CORRIENTE del socio
+            $cuentaSocio = $this->obtenerCuentaCorriente($socio);
 
             // Obtener la cuenta institucional de ahorros
             $cuentaInstitucional = $this->obtenerCuentaFondoAhorros();
@@ -108,8 +108,8 @@ class AhorroService
             // Normalizar el mes a día 01
             $mesNormalizado = Carbon::parse($mes)->startOfMonth()->toDateString();
 
-            // Obtener las cuentas
-            $cuentaSocio = $this->obtenerOCrearCuentaAhorro($socio);
+            // Obtener la cuenta CORRIENTE del socio
+            $cuentaSocio = $this->obtenerCuentaCorriente($socio);
             $cuentaInstitucional = $this->obtenerCuentaFondoAhorros();
 
             // Crear el aporte
@@ -190,7 +190,7 @@ class AhorroService
 
         $cuentaAhorro = Cuenta::where('propietario_tipo', 'SOCIO')
                              ->where('propietario_id', $socioId)
-                             ->where('tipo', 'AHORRO')
+                             ->where('tipo', 'CORRIENTE')
                              ->first();
 
         if (!$cuentaAhorro) {
@@ -263,10 +263,10 @@ class AhorroService
                 throw new \Exception("El aporte no existe");
             }
 
-            // Obtener las cuentas
+            // Obtener la cuenta CORRIENTE del socio
             $cuentaSocio = Cuenta::where('propietario_tipo', 'SOCIO')
                                  ->where('propietario_id', $aporte->socio_id)
-                                 ->where('tipo', 'AHORRO')
+                                 ->where('tipo', 'CORRIENTE')
                                  ->first();
 
             $cuentaInstitucional = $this->obtenerCuentaFondoAhorros();
@@ -322,40 +322,18 @@ class AhorroService
     }
 
     /**
-     * Obtener o crear la cuenta de ahorro de un socio
+     * Obtener la cuenta CORRIENTE de un socio
      */
-    protected function obtenerOCrearCuentaAhorro(Socio $socio): Cuenta
+    protected function obtenerCuentaCorriente(Socio $socio): Cuenta
     {
-        // Buscar cuenta de ahorro existente
+        // Buscar cuenta CORRIENTE existente
         $cuenta = Cuenta::where('propietario_tipo', 'SOCIO')
                         ->where('propietario_id', $socio->id)
-                        ->where('tipo', 'AHORRO')
+                        ->where('tipo', 'CORRIENTE')
                         ->first();
 
         if (!$cuenta) {
-            // Crear nueva cuenta de ahorro solo si no existe
-            try {
-                $cuenta = Cuenta::create([
-                    'propietario_tipo' => 'SOCIO',
-                    'propietario_id' => $socio->id,
-                    'nombre' => "Ahorros de {$socio->apellidos} {$socio->nombres}",
-                    'tipo' => 'AHORRO'
-                ]);
-            } catch (\Illuminate\Database\QueryException $e) {
-                // Si falla por restricción única, buscar la cuenta nuevamente
-                if ($e->getCode() == 23000) { // Integrity constraint violation
-                    $cuenta = Cuenta::where('propietario_tipo', 'SOCIO')
-                                    ->where('propietario_id', $socio->id)
-                                    ->where('tipo', 'AHORRO')
-                                    ->first();
-                    
-                    if (!$cuenta) {
-                        throw new \Exception("Error al crear cuenta de ahorro para el socio {$socio->id}: " . $e->getMessage());
-                    }
-                } else {
-                    throw $e;
-                }
-            }
+            throw new \Exception("No se encontró la cuenta CORRIENTE del socio {$socio->id}. La cuenta debe crearse al registrar el socio.");
         }
 
         return $cuenta;

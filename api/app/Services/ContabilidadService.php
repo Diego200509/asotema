@@ -82,6 +82,7 @@ class ContabilidadService
         $cuentaCartera = Cuenta::where('propietario_tipo', 'ASOTEMA')
             ->where('propietario_id', null)
             ->where('nombre', 'Cartera de préstamos')
+            ->where('tipo', 'INSTITUCIONAL')
             ->first();
 
         if (!$cuentaCartera) {
@@ -89,10 +90,34 @@ class ContabilidadService
                 'propietario_tipo' => 'ASOTEMA',
                 'propietario_id' => null,
                 'nombre' => 'Cartera de préstamos',
+                'tipo' => 'INSTITUCIONAL',
             ]);
         }
 
         return $cuentaCartera;
+    }
+
+    /**
+     * Obtener o crear la cuenta de Intereses de ASOTEMA
+     */
+    public function obtenerCuentaInteresesAsotema(): Cuenta
+    {
+        $cuentaIntereses = Cuenta::where('propietario_tipo', 'ASOTEMA')
+            ->where('propietario_id', null)
+            ->where('nombre', 'Intereses ASOTEMA')
+            ->where('tipo', 'INSTITUCIONAL')
+            ->first();
+
+        if (!$cuentaIntereses) {
+            $cuentaIntereses = Cuenta::create([
+                'propietario_tipo' => 'ASOTEMA',
+                'propietario_id' => null,
+                'nombre' => 'Intereses ASOTEMA',
+                'tipo' => 'INSTITUCIONAL',
+            ]);
+        }
+
+        return $cuentaIntereses;
     }
 
     /**
@@ -146,10 +171,11 @@ class ContabilidadService
     {
         $cuentaSocio = Cuenta::where('propietario_tipo', 'SOCIO')
             ->where('propietario_id', $socioId)
+            ->where('tipo', 'CORRIENTE')
             ->first();
 
         if (!$cuentaSocio) {
-            throw new \Exception("No se encontró la cuenta del socio ID: {$socioId}");
+            throw new \Exception("No se encontró la cuenta CORRIENTE del socio ID: {$socioId}");
         }
 
         // DEBE en cuenta del socio (genera deuda)
@@ -181,10 +207,11 @@ class ContabilidadService
     {
         $cuentaSocio = Cuenta::where('propietario_tipo', 'SOCIO')
             ->where('propietario_id', $socioId)
+            ->where('tipo', 'CORRIENTE')
             ->first();
 
         if (!$cuentaSocio) {
-            throw new \Exception("No se encontró la cuenta del socio ID: {$socioId}");
+            throw new \Exception("No se encontró la cuenta CORRIENTE del socio ID: {$socioId}");
         }
 
         // HABER en cuenta del socio (reduce deuda)
@@ -198,10 +225,10 @@ class ContabilidadService
         );
 
         // DEBE en cuenta de ASOTEMA por interés (ingreso)
-        $cuentaAsotema = Cuenta::asotema()->first();
         if ($interes > 0) {
+            $cuentaIntereses = $this->obtenerCuentaInteresesAsotema();
             $this->debe(
-                $cuentaAsotema->id,
+                $cuentaIntereses->id,
                 $interes,
                 'PAGO',
                 $prestamoId,

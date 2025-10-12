@@ -1,6 +1,7 @@
 import React from 'react';
 import Input from '../shared/Input';
 import Select from '../shared/Select';
+import { getCurrentDateEcuador } from '../../utils/dateUtils';
 
 const SocioFormFields = ({ formData, onChange, isEdit = false }) => {
   return (
@@ -89,7 +90,7 @@ const SocioFormFields = ({ formData, onChange, isEdit = false }) => {
           type="date"
           value={formData.fecha_ingreso ? formData.fecha_ingreso.split('T')[0] : ''}
           onChange={onChange}
-          max={new Date().toISOString().split('T')[0]}
+          max={getCurrentDateEcuador()}
           required
         />
         

@@ -1,56 +1,79 @@
 /**
- * Utilidades para manejo de fechas en zona horaria de Ecuador
+ * Utilidades para manejo de fechas con zona horaria de Ecuador
  */
 
 /**
- * Obtiene la fecha actual en zona horaria de Ecuador (America/Guayaquil)
+ * Obtiene la fecha actual en formato YYYY-MM-DD usando la zona horaria de Ecuador
  * @returns {string} Fecha en formato YYYY-MM-DD
  */
-export const getCurrentDateInEcuador = () => {
+export const getCurrentDateEcuador = () => {
   const now = new Date();
   
-  // Convertir a zona horaria de Ecuador (UTC-5)
-  const ecuadorTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Guayaquil"}));
+  // Usar toLocaleDateString con zona horaria de Ecuador
+  const ecuadorDate = new Date(now.toLocaleString("en-US", {timeZone: "America/Guayaquil"}));
   
-  // Formatear como YYYY-MM-DD
-  const year = ecuadorTime.getFullYear();
-  const month = String(ecuadorTime.getMonth() + 1).padStart(2, '0');
-  const day = String(ecuadorTime.getDate()).padStart(2, '0');
+  // Formatear a YYYY-MM-DD
+  const year = ecuadorDate.getFullYear();
+  const month = String(ecuadorDate.getMonth() + 1).padStart(2, '0');
+  const day = String(ecuadorDate.getDate()).padStart(2, '0');
   
   return `${year}-${month}-${day}`;
 };
 
 /**
- * Formatea una fecha para mostrar en zona horaria de Ecuador
- * @param {string} dateString - Fecha en formato YYYY-MM-DD
- * @param {number} monthsToAdd - Meses a agregar (opcional)
- * @returns {string} Fecha formateada para Ecuador
+ * Formatea una fecha para mostrar en el input type="date"
+ * @param {string|Date} date - Fecha a formatear
+ * @returns {string} Fecha en formato YYYY-MM-DD
+ */
+export const formatDateForInput = (date) => {
+  if (!date) return '';
+  
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  
+  if (isNaN(dateObj.getTime())) return '';
+  
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Formatea una fecha para Ecuador agregando meses
+ * @param {string} dateString - Fecha base en formato YYYY-MM-DD
+ * @param {number} monthsToAdd - Número de meses a agregar
+ * @returns {string} Fecha formateada en formato DD/MM/YYYY
  */
 export const formatDateForEcuador = (dateString, monthsToAdd = 0) => {
-  const date = new Date(dateString + 'T00:00:00-05:00'); // UTC-5 (Ecuador)
+  if (!dateString) return '';
   
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  
+  // Agregar meses si es necesario
   if (monthsToAdd > 0) {
     date.setMonth(date.getMonth() + monthsToAdd);
   }
   
-  return date.toLocaleDateString('es-EC', {
-    timeZone: 'America/Guayaquil',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
+  // Formatear para Ecuador (DD/MM/YYYY)
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}/${month}/${year}`;
 };
 
 /**
- * Obtiene la fecha actual formateada para Ecuador
- * @returns {string} Fecha actual en formato DD/MM/YYYY
+ * Valida si una fecha es válida para fecha de ingreso (hasta hoy en Ecuador)
+ * @param {string} date - Fecha a validar en formato YYYY-MM-DD
+ * @returns {boolean} true si la fecha es válida
  */
-export const getCurrentDateFormatted = () => {
-  const now = new Date();
-  return now.toLocaleDateString('es-EC', {
-    timeZone: 'America/Guayaquil',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
+export const isValidIngresoDate = (date) => {
+  if (!date) return false;
+  
+  const inputDate = new Date(date);
+  const todayEcuador = new Date(getCurrentDateEcuador());
+  
+  return inputDate <= todayEcuador;
 };

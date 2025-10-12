@@ -39,7 +39,7 @@ class StoreSocioRequest extends FormRequest
             'telefono' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'correo' => ['required', 'email', 'unique:socios,correo'],
             'estado' => ['required', 'in:ACTIVO,INACTIVO'],
-            'fecha_ingreso' => ['required', 'date', 'before_or_equal:today'],
+            'fecha_ingreso' => ['required', 'date', 'before_or_equal:' . now('America/Guayaquil')->toDateString()],
         ];
     }
 
