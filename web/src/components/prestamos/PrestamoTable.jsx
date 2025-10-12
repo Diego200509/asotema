@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Badge from '../shared/Badge';
 import { EyeIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import { formatDateForEcuador } from '../../utils/dateUtils';
+import PagarCuotaModal from './PagarCuotaModal';
 
 const PrestamoTable = ({ prestamos, loading, onView, canModify }) => {
   const navigate = useNavigate();
+  const [pagarCuotaModal, setPagarCuotaModal] = useState({
+    isOpen: false,
+    prestamo: null
+  });
 
   const getEstadoBadgeVariant = (estado) => {
     switch (estado) {
@@ -22,6 +27,20 @@ const PrestamoTable = ({ prestamos, loading, onView, canModify }) => {
       currency: 'USD',
       minimumFractionDigits: 2
     }).format(amount);
+  };
+
+  const handlePagarCuota = (prestamo) => {
+    setPagarCuotaModal({
+      isOpen: true,
+      prestamo: prestamo
+    });
+  };
+
+  const closePagarCuotaModal = () => {
+    setPagarCuotaModal({
+      isOpen: false,
+      prestamo: null
+    });
   };
 
   if (loading) {
@@ -102,7 +121,7 @@ const PrestamoTable = ({ prestamos, loading, onView, canModify }) => {
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => onView(prestamo.id)}
-                    className="text-primary-600 hover:text-primary-900 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                    className="text-blue-600 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
                     title="Ver detalle"
                   >
                     <EyeIcon className="h-5 w-5" />
@@ -110,8 +129,8 @@ const PrestamoTable = ({ prestamos, loading, onView, canModify }) => {
                   
                   {canModify && prestamo.estado === 'PENDIENTE' && (
                     <button
-                      onClick={() => navigate(`/prestamos/${prestamo.id}/pagar`)}
-                      className="text-green-600 hover:text-green-900 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      onClick={() => handlePagarCuota(prestamo)}
+                      className="text-green-600 hover:text-green-700 p-1 rounded-full hover:bg-green-50 transition-colors duration-200"
                       title="Pagar cuota"
                     >
                       <CurrencyDollarIcon className="h-5 w-5" />
@@ -123,6 +142,19 @@ const PrestamoTable = ({ prestamos, loading, onView, canModify }) => {
           ))}
         </tbody>
       </table>
+
+      {/* Modal de Pagar Cuota */}
+      {pagarCuotaModal.isOpen && (
+        <PagarCuotaModal
+          isOpen={pagarCuotaModal.isOpen}
+          onClose={closePagarCuotaModal}
+          prestamoId={pagarCuotaModal.prestamo?.id}
+          onSuccess={() => {
+            // Recargar datos si es necesario
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 };
