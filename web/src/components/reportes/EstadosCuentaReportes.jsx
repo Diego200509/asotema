@@ -569,19 +569,30 @@ const PrestamosReporte = ({ socio }) => {
         <div className="bg-blue-50 p-4 rounded-lg">
           <div className="text-sm font-medium text-blue-800">Préstamos Activos</div>
           <div className="text-2xl font-bold text-blue-900">
-            {prestamos.filter(p => p.estado === 'ACTIVO').length}
+            {prestamos.length}
           </div>
         </div>
         <div className="bg-purple-50 p-4 rounded-lg">
           <div className="text-sm font-medium text-purple-800">Total Pagado</div>
           <div className="text-2xl font-bold text-purple-900">
-            ${prestamos.reduce((sum, p) => sum + parseFloat(p.monto_pagado || 0), 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+            ${prestamos.reduce((sum, p) => {
+              const totalPagado = p.cuotas?.reduce((cuotaSum, cuota) => 
+                cuotaSum + parseFloat(cuota.monto_pagado || 0), 0) || 0;
+              return sum + totalPagado;
+            }, 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
           </div>
         </div>
         <div className="bg-orange-50 p-4 rounded-lg">
           <div className="text-sm font-medium text-orange-800">Pendiente</div>
           <div className="text-2xl font-bold text-orange-900">
-            ${prestamos.reduce((sum, p) => sum + parseFloat(p.monto_pendiente || 0), 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+            ${prestamos.reduce((sum, p) => {
+              const totalPendiente = p.cuotas?.reduce((cuotaSum, cuota) => {
+                const montoEsperado = parseFloat(cuota.monto_esperado || 0);
+                const montoPagado = parseFloat(cuota.monto_pagado || 0);
+                return cuotaSum + (montoEsperado - montoPagado);
+              }, 0) || 0;
+              return sum + totalPendiente;
+            }, 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
           </div>
         </div>
       </div>

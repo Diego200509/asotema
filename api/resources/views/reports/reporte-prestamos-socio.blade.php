@@ -252,19 +252,25 @@
         <div class="resumen-grid">
             <div class="resumen-card green">
                 <h3>Total Prestado</h3>
-                <div class="value">${{ number_format($prestamos->data->sum('capital') ?? 0, 2) }}</div>
+                <div class="value">${{ number_format(collect($prestamos->data ?? [])->sum('capital'), 2) }}</div>
             </div>
             <div class="resumen-card blue">
                 <h3>Préstamos Activos</h3>
-                <div class="value">{{ $prestamos->data->where('estado', 'ACTIVO')->count() ?? 0 }}</div>
+                <div class="value">{{ collect($prestamos->data ?? [])->where('estado', 'ACTIVO')->count() }}</div>
             </div>
             <div class="resumen-card purple">
                 <h3>Total Pagado</h3>
-                <div class="value">${{ number_format($prestamos->data->sum('monto_pagado') ?? 0, 2) }}</div>
+                <div class="value">${{ number_format(collect($prestamos->data ?? [])->sum(function($p) { 
+                    return collect($p->cuotas ?? [])->sum('monto_pagado'); 
+                }), 2) }}</div>
             </div>
             <div class="resumen-card orange">
                 <h3>Pendiente</h3>
-                <div class="value">${{ number_format($prestamos->data->sum('monto_pendiente') ?? 0, 2) }}</div>
+                <div class="value">${{ number_format(collect($prestamos->data ?? [])->sum(function($p) { 
+                    return collect($p->cuotas ?? [])->sum(function($cuota) {
+                        return $cuota->monto_esperado - $cuota->monto_pagado;
+                    }); 
+                }), 2) }}</div>
             </div>
         </div>
     </div>
@@ -275,7 +281,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Código</th>
+                        <th>ID</th>
                         <th>Capital</th>
                         <th>Tasa Interés</th>
                         <th>Plazo</th>
@@ -287,7 +293,7 @@
                 <tbody>
                     @foreach($prestamos->data as $prestamo)
                         <tr>
-                            <td>{{ $prestamo->codigo }}</td>
+                            <td>#{{ $prestamo->id }}</td>
                             <td class="monto">${{ number_format($prestamo->capital, 2) }}</td>
                             <td class="fecha">{{ number_format($prestamo->tasa_mensual * 100, 2) }}%</td>
                             <td class="fecha">{{ $prestamo->plazo_meses }} meses</td>
@@ -296,8 +302,8 @@
                                     {{ $prestamo->estado }}
                                 </span>
                             </td>
-                            <td class="monto" style="color: #16a34a;">${{ number_format($prestamo->monto_pagado, 2) }}</td>
-                            <td class="monto" style="color: #dc2626;">${{ number_format($prestamo->monto_pendiente, 2) }}</td>
+                            <td class="monto" style="color: #16a34a;">${{ number_format(collect($prestamo->cuotas ?? [])->sum('monto_pagado'), 2) }}</td>
+                            <td class="monto" style="color: #dc2626;">${{ number_format(collect($prestamo->cuotas ?? [])->sum(function($cuota) { return $cuota->monto_esperado - $cuota->monto_pagado; }), 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Ahorros - <?php echo e($socio->nombres); ?> <?php echo e($socio->apellidos); ?></title>
+    <title>Reporte de Préstamos - <?php echo e($socio->nombres); ?> <?php echo e($socio->apellidos); ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -83,27 +83,65 @@
         }
         .resumen-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
             margin-bottom: 30px;
         }
         .resumen-card {
             background-color: #f0f9ff;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             text-align: center;
             border: 2px solid #0ea5e9;
         }
+        .resumen-card.green {
+            background-color: #f0fdf4;
+            border-color: #16a34a;
+        }
+        .resumen-card.green h3 {
+            color: #15803d;
+        }
+        .resumen-card.green .value {
+            color: #166534;
+        }
+        .resumen-card.blue {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+        .resumen-card.blue h3 {
+            color: #1d4ed8;
+        }
+        .resumen-card.blue .value {
+            color: #1e40af;
+        }
+        .resumen-card.purple {
+            background-color: #faf5ff;
+            border-color: #a855f7;
+        }
+        .resumen-card.purple h3 {
+            color: #7c3aed;
+        }
+        .resumen-card.purple .value {
+            color: #6b21a8;
+        }
+        .resumen-card.orange {
+            background-color: #fff7ed;
+            border-color: #ea580c;
+        }
+        .resumen-card.orange h3 {
+            color: #c2410c;
+        }
+        .resumen-card.orange .value {
+            color: #9a3412;
+        }
         .resumen-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            color: #0369a1;
+            margin: 0 0 8px 0;
+            font-size: 12px;
             font-weight: bold;
         }
         .resumen-card .value {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
-            color: #0c4a6e;
         }
         .tabla-section h2 {
             margin: 0 0 20px 0;
@@ -115,9 +153,10 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
+            font-size: 11px;
         }
         th, td {
-            padding: 12px;
+            padding: 8px;
             text-align: left;
             border-bottom: 1px solid #e5e7eb;
         }
@@ -126,7 +165,7 @@
             color: white;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 10px;
         }
         tr:nth-child(even) {
             background-color: #f9fafb;
@@ -140,6 +179,26 @@
         }
         .fecha {
             text-align: center;
+        }
+        .estado {
+            text-align: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .estado.activo {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .estado.pendiente {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .estado.finalizado {
+            background-color: #e5e7eb;
+            color: #374151;
         }
         .footer {
             margin-top: 40px;
@@ -163,7 +222,7 @@
         <div class="company-name">ASOTEMA</div>
         <div class="company-motto">UNIDAD, TRABAJO Y SOLIDARIDAD</div>
         <div class="company-motto">ASOCIACIÓN DE EMPLEADOS Y TRABAJADORES EP-EMA</div>
-        <div class="document-title">REPORTE DE AHORROS</div>
+        <div class="document-title">REPORTE DE PRÉSTAMOS</div>
     </div>
 
     <div class="socio-info">
@@ -189,49 +248,70 @@
     </div>
 
     <div class="resumen-section">
-        <h2>Resumen de Ahorros</h2>
+        <h2>Resumen de Préstamos</h2>
         <div class="resumen-grid">
-            <div class="resumen-card">
-                <h3>Total Ahorrado</h3>
-                <div class="value">$<?php echo e(number_format($resumen->saldo_actual ?? 0, 2)); ?></div>
+            <div class="resumen-card green">
+                <h3>Total Prestado</h3>
+                <div class="value">$<?php echo e(number_format(collect($prestamos->data ?? [])->sum('capital'), 2)); ?></div>
             </div>
-            <div class="resumen-card">
-                <h3>Aportes Realizados</h3>
-                <div class="value"><?php echo e($resumen->total_aportes ?? 0); ?></div>
+            <div class="resumen-card blue">
+                <h3>Préstamos Activos</h3>
+                <div class="value"><?php echo e(collect($prestamos->data ?? [])->where('estado', 'ACTIVO')->count()); ?></div>
             </div>
-            <div class="resumen-card">
-                <h3>Último Aporte</h3>
-                <div class="value"><?php echo e(isset($resumen->ultimo_aporte) && $resumen->ultimo_aporte ? \Carbon\Carbon::parse($resumen->ultimo_aporte . 'T00:00:00-05:00')->format('d/m/Y') : 'N/A'); ?></div>
+            <div class="resumen-card purple">
+                <h3>Total Pagado</h3>
+                <div class="value">$<?php echo e(number_format(collect($prestamos->data ?? [])->sum(function($p) { 
+                    return collect($p->cuotas ?? [])->sum('monto_pagado'); 
+                }), 2)); ?></div>
+            </div>
+            <div class="resumen-card orange">
+                <h3>Pendiente</h3>
+                <div class="value">$<?php echo e(number_format(collect($prestamos->data ?? [])->sum(function($p) { 
+                    return collect($p->cuotas ?? [])->sum(function($cuota) {
+                        return $cuota->monto_esperado - $cuota->monto_pagado;
+                    }); 
+                }), 2)); ?></div>
             </div>
         </div>
     </div>
 
     <div class="tabla-section">
-        <h2>Historial de Aportes</h2>
-        <?php if(isset($ahorros->data) && count($ahorros->data) > 0): ?>
+        <h2>Historial de Préstamos</h2>
+        <?php if(isset($prestamos->data) && count($prestamos->data) > 0): ?>
             <table>
                 <thead>
                     <tr>
-                        <th>Mes</th>
-                        <th>Fecha Operación</th>
-                        <th>Monto</th>
-                        <th>Registrado Por</th>
+                        <th>ID</th>
+                        <th>Capital</th>
+                        <th>Tasa Interés</th>
+                        <th>Plazo</th>
+                        <th>Estado</th>
+                        <th>Pagado</th>
+                        <th>Pendiente</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $__currentLoopData = $ahorros->data; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ahorro): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php $__currentLoopData = $prestamos->data; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prestamo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <tr>
-                            <td class="fecha"><?php echo e(\Carbon\Carbon::parse($ahorro->mes)->format('m/Y')); ?></td>
-                            <td class="fecha"><?php echo e(\Carbon\Carbon::parse($ahorro->fecha_operacion . 'T00:00:00-05:00')->format('d/m/Y')); ?></td>
-                            <td class="monto">$<?php echo e(number_format($ahorro->monto, 2)); ?></td>
-                            <td><?php echo e($ahorro->registrado_por_nombre ?? ($ahorro->registrador->nombre ?? 'N/A')); ?></td>
+                            <td>#<?php echo e($prestamo->id); ?></td>
+                            <td class="monto">$<?php echo e(number_format($prestamo->capital, 2)); ?></td>
+                            <td class="fecha"><?php echo e(number_format($prestamo->tasa_mensual * 100, 2)); ?>%</td>
+                            <td class="fecha"><?php echo e($prestamo->plazo_meses); ?> meses</td>
+                            <td>
+                                <span class="estado <?php echo e(strtolower($prestamo->estado)); ?>">
+                                    <?php echo e($prestamo->estado); ?>
+
+                                </span>
+                            </td>
+                            <td class="monto" style="color: #16a34a;">$<?php echo e(number_format(collect($prestamo->cuotas ?? [])->sum('monto_pagado'), 2)); ?></td>
+                            <td class="monto" style="color: #dc2626;">$<?php echo e(number_format(collect($prestamo->cuotas ?? [])->sum(function($cuota) { return $cuota->monto_esperado - $cuota->monto_pagado; }), 2)); ?></td>
                         </tr>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </tbody>
             </table>
         <?php else: ?>
             <div class="no-data">
-                <p>No se encontraron aportes de ahorro para este socio.</p>
+                <p>No se encontraron préstamos para este socio.</p>
             </div>
         <?php endif; ?>
     </div>
@@ -242,4 +322,4 @@
     </div>
 </body>
 </html>
-<?php /**PATH D:\WorkSpace\asotema\api\resources\views/reports/reporte-ahorros-socio.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\WorkSpace\asotema\api\resources\views/reports/reporte-prestamos-socio.blade.php ENDPATH**/ ?>
