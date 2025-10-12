@@ -262,53 +262,53 @@ const PrestamoDetalle = () => {
           
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Cuota
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Vencimiento
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Cuota
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Interés
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Capital
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Pagado
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Estado
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {getCuotasPaginadas().map((cuota) => (
-                  <tr key={cuota.numero_cuota} className="hover:bg-gray-50">
+                  <tr key={cuota.numero_cuota} className="hover:bg-gray-50 transition">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {cuota.numero_cuota}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {formatDate(cuota.fecha_vencimiento)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
                       {formatCurrency(cuota.monto_esperado)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">
                       {formatCurrency(cuota.parte_interes)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">
                       {formatCurrency(cuota.parte_capital)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">
                       {formatCurrency(cuota.monto_pagado)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <Badge variant={getCuotaEstadoBadgeVariant(cuota.estado)}>
                         {cuota.estado}
                       </Badge>
@@ -317,18 +317,26 @@ const PrestamoDetalle = () => {
                 ))}
               </tbody>
             </table>
-            
-            {/* Paginación */}
-            {getPaginationInfo().last_page > 1 && (
-              <div className="mt-4 flex justify-center">
+          </div>
+          
+          {/* Paginación */}
+          {(() => {
+            const paginationInfo = getPaginationInfo();
+            return paginationInfo.last_page > 1 && (
+              <div className="mt-4">
                 <Pagination
                   currentPage={pagination.page}
-                  lastPage={getPaginationInfo().last_page}
+                  totalPages={paginationInfo.last_page}
+                  totalItems={paginationInfo.total}
+                  perPage={pagination.per_page}
                   onPageChange={handlePageChange}
+                  showInfo={true}
+                  showFirstLast={true}
+                  maxVisiblePages={5}
                 />
               </div>
-            )}
-          </div>
+            );
+          })()}
         </Card>
       </div>
       
