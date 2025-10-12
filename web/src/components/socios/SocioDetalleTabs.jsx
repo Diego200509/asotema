@@ -50,7 +50,7 @@ const SocioDetalleTabs = ({ socio }) => {
   });
   
   const { user } = useAuth();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
 
   const canModify = user && (user.rol === 'ADMIN' || user.rol === 'TESORERO');
 
@@ -196,31 +196,57 @@ const SocioDetalleTabs = ({ socio }) => {
     }
   };
 
-  const exportToCSV = () => {
-    if (!estadoCuenta?.movimientos) return;
+  const downloadPDF = async () => {
+    if (!socio?.id) return;
 
-    const headers = ['Fecha', 'Tipo', 'Monto', 'Descripción', 'Saldo Acumulado'];
-    const rows = estadoCuenta.movimientos.map(mov => [
-      mov.fecha,
-      mov.tipo,
-      formatCurrency(mov.monto),
-      mov.descripcion,
-      formatCurrency(mov.saldo_acumulado || 0)
-    ]);
+    try {
+      // Obtener el token del localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showError('No hay token de autenticación');
+        return;
+      }
 
-    const csvContent = [headers, ...rows]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
+      const response = await axios.get(`/socios/${socio.id}/estado-cuenta/pdf`, {
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/pdf'
+        }
+      });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `estado_cuenta_${socio.cedula}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Verificar que la respuesta sea exitosa y contenga datos
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `estado_cuenta_${socio.cedula}_${socio.nombres}_${socio.apellidos}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        showSuccess('PDF descargado exitosamente');
+      } else {
+        throw new Error('Respuesta inválida del servidor');
+      }
+    } catch (error) {
+      console.error('Error al descargar PDF:', error);
+      
+      // Solo mostrar error si realmente hay un problema
+      if (error.response?.status === 401) {
+        showError('Token de autenticación inválido o expirado');
+      } else if (error.response?.status === 404) {
+        showError('Ruta del PDF no encontrada');
+      } else if (error.response?.status === 500) {
+        showError('Error interno del servidor al generar el PDF');
+      } else if (error.message === 'Respuesta inválida del servidor') {
+        showError('El servidor no pudo generar el PDF');
+      } else {
+        showError('Error al generar el PDF del estado de cuenta');
+      }
+    }
   };
 
   const tabs = [
@@ -356,9 +382,9 @@ const SocioDetalleTabs = ({ socio }) => {
                 {estadoCuenta && (
                   <Button
                     variant="secondary"
-                    onClick={exportToCSV}
+                    onClick={downloadPDF}
                   >
-                    Exportar CSV
+                    Descargar PDF
                   </Button>
                 )}
               </div>
@@ -402,7 +428,7 @@ const SocioDetalleTabs = ({ socio }) => {
                   
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10"> {/* SCROLL-FIX: Sticky table header */}
+                      <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                             Fecha

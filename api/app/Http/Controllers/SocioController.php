@@ -179,5 +179,74 @@ class SocioController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generar PDF del estado de cuenta del socio
+     */
+    public function estadoCuentaPDF(Socio $socio)
+    {
+        try {
+            \Log::info('Iniciando generación de PDF para socio ID: ' . $socio->id);
+            
+            // Verificar que el socio existe en la base de datos
+            $socio = Socio::findOrFail($socio->id);
+            \Log::info('Socio encontrado: ' . $socio->nombres . ' ' . $socio->apellidos);
+            
+            // Obtener el estado de cuenta del socio directamente
+            $reportesController = app(\App\Http\Controllers\ReportesController::class);
+            $estadoCuentaResponse = $reportesController->estadoSocio(request(), $socio->id);
+            
+            // Obtener los datos de la respuesta
+            $responseData = $estadoCuentaResponse->getData();
+            
+            if (!$responseData || !$responseData->success) {
+                \Log::error('Error al obtener estado de cuenta: ' . json_encode($responseData));
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al obtener el estado de cuenta'
+                ], 500);
+            }
+            
+            $estadoCuenta = $responseData->data;
+            \Log::info('Estado de cuenta obtenido exitosamente');
+            
+            // Verificar que la vista existe
+            $viewPath = resource_path('views/reports/estado-cuenta-socio.blade.php');
+            if (!file_exists($viewPath)) {
+                \Log::error('Vista no encontrada: ' . $viewPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vista del PDF no encontrada'
+                ], 500);
+            }
+            
+            \Log::info('Generando PDF con DomPDF');
+            // Generar PDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.estado-cuenta-socio', [
+                'socio' => $socio,
+                'estadoCuenta' => $estadoCuenta
+            ]);
+            
+            $pdf->setPaper('A4', 'portrait');
+            
+            $filename = "estado_cuenta_{$socio->cedula}_{$socio->nombres}_{$socio->apellidos}.pdf";
+            $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename); // Limpiar caracteres especiales
+            
+            \Log::info('PDF generado exitosamente, descargando como: ' . $filename);
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al generar PDF: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el PDF del estado de cuenta',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
+    }
 }
 

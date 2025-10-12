@@ -104,7 +104,7 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
       if (response.success) {
         const { exitosos, errores } = response.data;
         
-        let message = `✅ Procesamiento completado: ${exitosos.length} exitosos`;
+        let message = `Procesamiento completado: ${exitosos.length} exitosos`;
         if (errores.length > 0) {
           message += `, ${errores.length} con errores`;
         }
