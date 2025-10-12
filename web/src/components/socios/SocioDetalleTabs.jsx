@@ -196,6 +196,64 @@ const SocioDetalleTabs = ({ socio }) => {
     }
   };
 
+  const previewPDF = async () => {
+    if (!socio?.id) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showError('No se encontró el token de autenticación.');
+        return;
+      }
+
+      const response = await axios.get(`/socios/${socio.id}/estado-cuenta/pdf`, {
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/pdf'
+        }
+      });
+
+      // Verificar que la respuesta sea exitosa y contenga datos
+      if (response.status === 200 && response.data && response.data.size > 0) {
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        
+        // Abrir el PDF en una nueva ventana para vista previa
+        const previewWindow = window.open(url, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+        
+        if (previewWindow) {
+          showSuccess('PDF generado exitosamente. Se abrió en nueva ventana.');
+          
+          // Limpiar la URL después de un tiempo
+          setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+          }, 30000); // 30 segundos
+        } else {
+          // Si no se puede abrir la ventana, mostrar error
+          showError('No se pudo abrir la vista previa. Verifique que los pop-ups estén permitidos.');
+          window.URL.revokeObjectURL(url);
+        }
+      } else {
+        throw new Error('Respuesta inválida del servidor');
+      }
+    } catch (error) {
+      console.error('Error al generar vista previa del PDF:', error);
+      
+      if (error.response?.status === 401) {
+        showError('Token de autenticación inválido o expirado');
+      } else if (error.response?.status === 404) {
+        showError('Ruta del PDF no encontrada');
+      } else if (error.response?.status === 500) {
+        showError('Error interno del servidor al generar el PDF');
+      } else if (error.message === 'Respuesta inválida del servidor') {
+        showError('El servidor no pudo generar el PDF');
+      } else {
+        showError('Error al generar la vista previa del PDF');
+      }
+    }
+  };
+
   const downloadPDF = async () => {
     if (!socio?.id) return;
 
@@ -380,12 +438,20 @@ const SocioDetalleTabs = ({ socio }) => {
                   Estado de Cuenta
                 </h4>
                 {estadoCuenta && (
-                  <Button
-                    variant="secondary"
-                    onClick={downloadPDF}
-                  >
-                    Descargar PDF
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={previewPDF}
+                    >
+                      Vista Previa
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={downloadPDF}
+                    >
+                      Descargar PDF
+                    </Button>
+                  </div>
                 )}
               </div>
 
