@@ -5,6 +5,7 @@ import Modal from '../shared/Modal';
 import Input from '../shared/Input';
 import Select from '../shared/Select';
 import Button from '../shared/Button';
+import { formatDateForEcuador } from '../../utils/dateUtils';
 
 const PagarCuotaModal = ({ isOpen, onClose, prestamoId, onSuccess }) => {
   const { showSuccess, showError } = useToast();
@@ -57,7 +58,8 @@ const PagarCuotaModal = ({ isOpen, onClose, prestamoId, onSuccess }) => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-EC');
+    if (!dateString) return 'N/A';
+    return formatDateForEcuador(dateString, 0);
   };
 
   const getCuotaOptions = () => {

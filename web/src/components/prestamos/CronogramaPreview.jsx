@@ -26,24 +26,34 @@ const CronogramaPreview = ({ capital, plazo, tasa = 0.01, fechaInicio }) => {
     if (!capital || !plazo || !fechaInicio) return [];
 
     const capitalTotal = parseFloat(capital);
+    const plazoNum = parseInt(plazo);
     const interesFijo = capitalTotal * tasa; // Interés fijo del 1% sobre el capital total
-    const capitalPorCuota = capitalTotal / parseInt(plazo); // Capital dividido en partes iguales
-    const cuotaFija = capitalPorCuota + interesFijo; // Cuota = Capital + Interés fijo
+    const capitalPorCuota = capitalTotal / plazoNum; // Capital dividido en partes iguales
+    const cuotaFija = Math.round((capitalPorCuota + interesFijo) * 100) / 100; // Cuota fija redondeada
+    
+    // Calcular el total teórico exacto
+    const totalTeorico = capitalTotal + (interesFijo * plazoNum);
     
     const cronograma = [];
     let saldoPendiente = capitalTotal;
 
-    for (let i = 1; i <= parseInt(plazo); i++) {
-      // Para la última cuota, ajustar el capital para que no quede saldo
-      let capitalCuota = capitalPorCuota;
-      if (i === parseInt(plazo)) {
+    for (let i = 1; i <= plazoNum; i++) {
+      let capitalCuota, cuotaMonto;
+      
+      if (i === plazoNum) {
+        // Última cuota: ajustar para que el total sea exacto
         capitalCuota = saldoPendiente;
+        // Calcular la cuota exacta para que el total sea teórico
+        cuotaMonto = Math.round((totalTeorico - (cuotaFija * (plazoNum - 1))) * 100) / 100;
+      } else {
+        capitalCuota = Math.round((capitalTotal / plazoNum) * 100) / 100;
+        cuotaMonto = cuotaFija;
       }
 
       cronograma.push({
         numero: i,
         fecha: formatDate(fechaInicio, i),
-        cuota: cuotaFija,
+        cuota: cuotaMonto,
         interes: interesFijo, // Interés fijo en todas las cuotas
         capital: capitalCuota,
         saldo: saldoPendiente - capitalCuota
@@ -56,7 +66,7 @@ const CronogramaPreview = ({ capital, plazo, tasa = 0.01, fechaInicio }) => {
   };
 
   const cronograma = generarCronograma();
-  const cuotaFija = capital && plazo ? (parseFloat(capital) / parseInt(plazo)) + (parseFloat(capital) * tasa) : 0;
+  const cuotaFija = capital && plazo ? Math.round(((parseFloat(capital) / parseInt(plazo)) + (parseFloat(capital) * tasa)) * 100) / 100 : 0;
   const totalInteres = cronograma.reduce((sum, cuota) => sum + cuota.interes, 0);
   const totalPagar = cronograma.reduce((sum, cuota) => sum + cuota.cuota, 0);
 

@@ -19,6 +19,7 @@ const PrestamoDetalle = () => {
   const { showError } = useToast();
 
   const [prestamo, setPrestamo] = useState(null);
+  const [totales, setTotales] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPagarModal, setShowPagarModal] = useState(false);
   const [pagination, setPagination] = useState({
@@ -38,6 +39,7 @@ const PrestamoDetalle = () => {
       const response = await axios.get(`/prestamos/${id}`);
       if (response.data.success) {
         setPrestamo(response.data.data);
+        setTotales(response.data.totales);
       }
     } catch (error) {
       console.error('Error al cargar préstamo:', error);
@@ -125,9 +127,9 @@ const PrestamoDetalle = () => {
     );
   }
 
-  const totalEsperado = Math.round((prestamo.cuotas?.reduce((sum, cuota) => sum + (parseFloat(cuota.monto_esperado) || 0), 0) || 0) * 100) / 100;
-  const totalPagado = Math.round((prestamo.cuotas?.reduce((sum, cuota) => sum + (parseFloat(cuota.monto_pagado) || 0), 0) || 0) * 100) / 100;
-  const totalPendiente = Math.round((totalEsperado - totalPagado) * 100) / 100;
+  const totalEsperado = totales?.total_teorico || 0;
+  const totalPagado = totales?.total_pagado || 0;
+  const totalPendiente = totales?.total_pendiente || 0;
 
   return (
     <Layout>

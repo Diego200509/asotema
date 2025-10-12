@@ -79,11 +79,12 @@ class PrestamoController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $prestamo = $this->prestamoService->obtenerDetallePrestamo($id);
+            $resultado = $this->prestamoService->obtenerDetallePrestamo($id);
 
             return response()->json([
                 'success' => true,
-                'data' => $prestamo
+                'data' => $resultado['prestamo'],
+                'totales' => $resultado['totales']
             ]);
 
         } catch (\Exception $e) {

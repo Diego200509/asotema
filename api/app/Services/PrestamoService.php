@@ -72,11 +72,14 @@ class PrestamoService
         $capitalPorCuota = $capital / $plazo;
         $cuotaFija = round($capitalPorCuota + $interesFijo, 2);
         
-        // Calcular el total esperado
-        $totalEsperado = round($cuotaFija * $plazo, 2);
+        // Calcular el total teórico exacto
+        $totalTeorico = $capital + $interesFijo * $plazo;
+        
+        // Calcular el total que se obtendría con la cuota fija
+        $totalConCuotaFija = round($cuotaFija * $plazo, 2);
         
         // Calcular diferencia para ajustar la última cuota
-        $diferencia = $totalEsperado - ($capital + $interesFijo * $plazo);
+        $diferencia = $totalConCuotaFija - $totalTeorico;
 
         // Saldo pendiente para cálculos
         $saldoPendiente = $capital;
@@ -86,7 +89,8 @@ class PrestamoService
             if ($i == $plazo) {
                 // Ajustar la última cuota para que el total sea exacto
                 $capitalCuota = $saldoPendiente;
-                $cuotaFijaAjustada = round($capitalCuota + $interesFijo - $diferencia, 2);
+                // Calcular la cuota exacta para que el total sea teórico
+                $cuotaFijaAjustada = round($totalTeorico - ($cuotaFija * ($plazo - 1)), 2);
             } else {
                 $capitalCuota = round($capital / $plazo, 2);
                 $cuotaFijaAjustada = $cuotaFija;
@@ -167,8 +171,8 @@ class PrestamoService
                     // Calcular distribución del pago
                     $distribucion = $this->distribuirPago($cuotaActual, $montoAplicar);
 
-                    // Actualizar cuota
-                    $cuotaActual->monto_pagado += $montoAplicar;
+                    // Actualizar cuota con redondeo preciso
+                    $cuotaActual->monto_pagado = round($cuotaActual->monto_pagado + $montoAplicar, 2);
                     $cuotaActual->estado = $this->calcularEstadoCuota($cuotaActual);
 
                     if ($cuotaActual->completamente_pagada) {
@@ -278,14 +282,32 @@ class PrestamoService
     /**
      * Obtener detalle de préstamo con cronograma
      */
-    public function obtenerDetallePrestamo(int $prestamoId): Prestamo
+    public function obtenerDetallePrestamo(int $prestamoId): array
     {
-        return Prestamo::with([
+        $prestamo = Prestamo::with([
             'socio',
             'creadoPor',
             'cuotas' => function ($query) {
                 $query->orderBy('numero_cuota');
             }
         ])->findOrFail($prestamoId);
+
+        // Calcular totales correctos
+        $capital = $prestamo->capital;
+        $interesFijo = $capital * $prestamo->tasa_mensual;
+        $totalTeorico = $capital + $interesFijo * $prestamo->plazo_meses;
+        
+        $totalPagado = $prestamo->cuotas->sum('monto_pagado');
+        $totalPendiente = $totalTeorico - $totalPagado;
+
+        return [
+            'prestamo' => $prestamo,
+            'totales' => [
+                'capital' => $capital,
+                'total_teorico' => $totalTeorico,
+                'total_pagado' => round($totalPagado, 2),
+                'total_pendiente' => round($totalPendiente, 2),
+            ]
+        ];
     }
 }
