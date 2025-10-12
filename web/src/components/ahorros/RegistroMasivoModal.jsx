@@ -6,6 +6,7 @@ import MoneyInput from '../shared/MoneyInput';
 import MonthPicker from '../shared/MonthPicker';
 import SearchableChecklist from '../shared/SearchableChecklist';
 import Button from '../shared/Button';
+import { getCurrentDateEcuador } from '../../utils/dateUtils';
 
 const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
   const { showSuccess, showError } = useToast();
@@ -31,7 +32,7 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
       const currentMonth = today.toISOString().slice(0, 7); // YYYY-MM
       setFormData({
         mes: currentMonth,
-        fecha_operacion: today.toISOString().split('T')[0],
+        fecha_operacion: getCurrentDateEcuador(), // Usar fecha de Ecuador
         monto: '',
         notas: ''
       });
@@ -182,7 +183,7 @@ const RegistroMasivoModal = ({ isOpen, onClose, onSuccess }) => {
                 name="fecha_operacion"
                 value={formData.fecha_operacion}
                 onChange={handleChange}
-                max={new Date().toISOString().split('T')[0]}
+                max={getCurrentDateEcuador()}
                 required
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />

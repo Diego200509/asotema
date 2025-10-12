@@ -7,7 +7,11 @@ import Sidebar from './Sidebar';
 const Layout = ({ children }) => {
   const location = useLocation();
   const [activeSection, setActiveSection] = useState('socios');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Cargar el estado del sidebar desde localStorage
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -50,7 +54,10 @@ const Layout = ({ children }) => {
       };
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    const newCollapsedState = !sidebarCollapsed;
+    setSidebarCollapsed(newCollapsedState);
+    // Guardar el estado en localStorage
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(newCollapsedState));
   };
 
   return (

@@ -74,7 +74,7 @@ class ReportesController extends Controller
                             'ref_id' => $movimiento->ref_id,
                             'descripcion' => $movimiento->descripcion,
                             'creado_por' => $movimiento->creadoPor->nombre,
-                            'fecha' => $movimiento->created_at->format('Y-m-d H:i:s'),
+                            'fecha' => $movimiento->created_at->setTimezone('America/Guayaquil')->format('Y-m-d'),
                         ];
                     })
                 ]
@@ -116,7 +116,7 @@ class ReportesController extends Controller
                             'tipo' => $movimiento->tipo,
                             'monto' => $movimiento->monto,
                             'descripcion' => $movimiento->descripcion,
-                            'fecha' => $movimiento->created_at->format('Y-m-d H:i:s'),
+                            'fecha' => $movimiento->created_at->setTimezone('America/Guayaquil')->format('Y-m-d'),
                         ];
                     })
                 ]
@@ -165,7 +165,7 @@ class ReportesController extends Controller
                             'tipo' => $movimiento->tipo,
                             'monto' => $movimiento->monto,
                             'descripcion' => $movimiento->descripcion,
-                            'fecha' => $movimiento->created_at->format('Y-m-d H:i:s'),
+                            'fecha' => $movimiento->created_at->setTimezone('America/Guayaquil')->format('Y-m-d'),
                         ];
                     })
                 ]

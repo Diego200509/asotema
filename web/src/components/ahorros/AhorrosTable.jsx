@@ -7,6 +7,7 @@ import Button from '../shared/Button';
 import ConfirmModal from '../shared/ConfirmModal';
 import Pagination from '../shared/Pagination';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import { formatDateForEcuador } from '../../utils/dateUtils';
 
 const AhorrosTable = ({ 
   aportes, 
@@ -33,20 +34,28 @@ const AhorrosTable = ({
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-EC', {
-      timeZone: 'America/Guayaquil',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
+    if (!dateString) return 'N/A';
+    return formatDateForEcuador(dateString, 0);
   };
 
   const formatMonth = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-EC', {
-      timeZone: 'America/Guayaquil',
-      year: 'numeric',
-      month: '2-digit'
-    });
+    if (!dateString) return 'N/A';
+    
+    try {
+      // El mes viene como fecha YYYY-MM-DD desde el backend con zona horaria correcta
+      const date = new Date(dateString + 'T00:00:00-05:00'); // Forzar zona horaria Ecuador
+      
+      if (isNaN(date.getTime())) {
+        return 'N/A';
+      }
+      
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${month}/${year}`;
+      
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
   const handleDelete = async (aporte) => {

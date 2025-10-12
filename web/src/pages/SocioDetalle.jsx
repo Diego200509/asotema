@@ -62,7 +62,7 @@ const SocioDetalle = () => {
 
   return (
     <Layout>
-      <div className="h-full flex flex-col space-y-6">
+      <div className="h-full flex flex-col space-y-6"> {/* SCROLL-FIX: Flex column layout */}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -97,7 +97,7 @@ const SocioDetalle = () => {
         </div>
 
         {/* Content */}
-        <Card>
+        <Card className="flex flex-col h-full min-h-0"> {/* SCROLL-FIX: Flex column for card */}
           <SocioDetalleTabs socio={socio} />
         </Card>
       </div>

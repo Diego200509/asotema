@@ -24,8 +24,8 @@ class AporteAhorro extends Model
     ];
 
     protected $casts = [
-        'mes' => 'date',
-        'fecha_operacion' => 'date',
+        'mes' => 'date:Y-m-d',
+        'fecha_operacion' => 'date:Y-m-d',
         'monto' => 'decimal:2',
         'socio_id' => 'integer',
         'registrado_por' => 'integer',
@@ -94,7 +94,25 @@ class AporteAhorro extends Model
     }
 
     /**
-     * Accessor para formatear el mes
+     * Accessor para obtener el mes formateado correctamente
+     */
+    public function getMesAttribute($value)
+    {
+        if (!$value) return null;
+        return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m-d');
+    }
+
+    /**
+     * Accessor para obtener la fecha de operación formateada correctamente
+     */
+    public function getFechaOperacionAttribute($value)
+    {
+        if (!$value) return null;
+        return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m-d');
+    }
+
+    /**
+     * Accessor para formatear el mes (mantener compatibilidad)
      */
     public function getMesFormateadoAttribute()
     {
