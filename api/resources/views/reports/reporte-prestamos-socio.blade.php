@@ -149,6 +149,74 @@
             color: #16A34A;
             text-align: center;
         }
+        .prestamo-detalle {
+            margin-bottom: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .prestamo-header {
+            background-color: #16A34A;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .prestamo-info {
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .info-item-detalle {
+            text-align: center;
+        }
+        .info-item-detalle .label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info-item-detalle .value {
+            font-size: 14px;
+            color: #111827;
+            font-weight: bold;
+        }
+        .cuotas-table {
+            width: 100%;
+            font-size: 10px;
+        }
+        .cuotas-table th {
+            background-color: #f3f4f6;
+            color: #374151;
+            padding: 8px 4px;
+            font-size: 9px;
+        }
+        .cuotas-table td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .estado-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .estado-badge.pagada {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .estado-badge.parcial {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .estado-badge.pendiente {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -276,42 +344,102 @@
     </div>
 
     <div class="tabla-section">
-        <h2>Historial de Préstamos</h2>
+        <h2>Detalle de Préstamos y Cronograma de Cuotas</h2>
         @if(isset($prestamos->data) && count($prestamos->data) > 0)
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Capital</th>
-                        <th>Tasa Interés</th>
-                        <th>Plazo</th>
-                        <th>Estado</th>
-                        <th>Cuotas Pagadas</th>
-                        <th>Cuotas Pendientes</th>
-                        <th>Pagado</th>
-                        <th>Pendiente</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($prestamos->data as $prestamo)
-                        <tr>
-                            <td>#{{ $prestamo->id }}</td>
-                            <td class="monto">${{ number_format($prestamo->capital, 2) }}</td>
-                            <td class="fecha">{{ number_format($prestamo->tasa_mensual * 100, 2) }}%</td>
-                            <td class="fecha">{{ $prestamo->plazo_meses }} meses</td>
-                            <td>
+            @foreach($prestamos->data as $prestamo)
+                <div class="prestamo-detalle">
+                    <!-- Header del préstamo -->
+                    <div class="prestamo-header">
+                        Préstamo #{{ $prestamo->id }} - ${{ number_format($prestamo->capital, 2) }}
+                    </div>
+                    
+                    <!-- Información del préstamo -->
+                    <div class="prestamo-info">
+                        <div class="info-item-detalle">
+                            <div class="label">Capital</div>
+                            <div class="value">${{ number_format($prestamo->capital, 2) }}</div>
+                        </div>
+                        <div class="info-item-detalle">
+                            <div class="label">Tasa Interés</div>
+                            <div class="value">{{ number_format($prestamo->tasa_mensual * 100, 2) }}%</div>
+                        </div>
+                        <div class="info-item-detalle">
+                            <div class="label">Plazo</div>
+                            <div class="value">{{ $prestamo->plazo_meses }} meses</div>
+                        </div>
+                        <div class="info-item-detalle">
+                            <div class="label">Estado</div>
+                            <div class="value">
                                 <span class="estado {{ strtolower($prestamo->estado) }}">
                                     {{ $prestamo->estado }}
                                 </span>
-                            </td>
-                            <td class="fecha">{{ collect($prestamo->cuotas ?? [])->filter(function($cuota) { return $cuota->estado === 'PAGADA'; })->count() }}</td>
-                            <td class="fecha">{{ collect($prestamo->cuotas ?? [])->filter(function($cuota) { return $cuota->estado === 'PENDIENTE' || $cuota->estado === 'PARCIAL'; })->count() }}</td>
-                            <td class="monto" style="color: #16a34a;">${{ number_format(collect($prestamo->cuotas ?? [])->sum('monto_pagado'), 2) }}</td>
-                            <td class="monto" style="color: #dc2626;">${{ number_format(collect($prestamo->cuotas ?? [])->sum(function($cuota) { return $cuota->monto_esperado - $cuota->monto_pagado; }), 2) }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Resumen de cuotas -->
+                    <div class="prestamo-info" style="background-color: #f0f9ff;">
+                        <div class="info-item-detalle">
+                            <div class="label">Total Cuotas</div>
+                            <div class="value">{{ count($prestamo->cuotas ?? []) }}</div>
+                        </div>
+                        <div class="info-item-detalle">
+                            <div class="label">Cuotas Pagadas</div>
+                            <div class="value" style="color: #16a34a;">
+                                {{ collect($prestamo->cuotas ?? [])->filter(function($cuota) { return $cuota->estado === 'PAGADA'; })->count() }}
+                            </div>
+                        </div>
+                        <div class="info-item-detalle">
+                            <div class="label">Cuotas Pendientes</div>
+                            <div class="value" style="color: #dc2626;">
+                                {{ collect($prestamo->cuotas ?? [])->filter(function($cuota) { return $cuota->estado === 'PENDIENTE' || $cuota->estado === 'PARCIAL'; })->count() }}
+                            </div>
+                        </div>
+                        <div class="info-item-detalle">
+                            <div class="label">Total Pagado</div>
+                            <div class="value" style="color: #16a34a;">
+                                ${{ number_format(collect($prestamo->cuotas ?? [])->sum('monto_pagado'), 2) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cronograma de cuotas -->
+                    @if(isset($prestamo->cuotas) && count($prestamo->cuotas) > 0)
+                        <table class="cuotas-table">
+                            <thead>
+                                <tr>
+                                    <th>Cuota</th>
+                                    <th>Vencimiento</th>
+                                    <th>Monto Esperado</th>
+                                    <th>Interés</th>
+                                    <th>Capital</th>
+                                    <th>Pagado</th>
+                                    <th>Pendiente</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($prestamo->cuotas as $cuota)
+                                    <tr>
+                                        <td class="fecha">{{ $cuota->numero_cuota }}</td>
+                                        <td class="fecha">{{ \Carbon\Carbon::parse($cuota->fecha_vencimiento)->format('d/m/Y') }}</td>
+                                        <td class="monto">${{ number_format($cuota->monto_esperado, 2) }}</td>
+                                        <td class="monto">${{ number_format($cuota->parte_interes, 2) }}</td>
+                                        <td class="monto">${{ number_format($cuota->parte_capital, 2) }}</td>
+                                        <td class="monto" style="color: #16a34a;">${{ number_format($cuota->monto_pagado, 2) }}</td>
+                                        <td class="monto" style="color: #dc2626;">${{ number_format($cuota->monto_esperado - $cuota->monto_pagado, 2) }}</td>
+                                        <td>
+                                            <span class="estado-badge {{ strtolower($cuota->estado) }}">
+                                                {{ $cuota->estado }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
+            @endforeach
         @else
             <div class="no-data">
                 <p>No se encontraron préstamos para este socio.</p>
