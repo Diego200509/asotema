@@ -26,12 +26,23 @@ const PagarCuotaModal = ({ isOpen, onClose, prestamoId, onSuccess }) => {
 
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        numero_cuota: '',
-        monto: ''
-      });
+      // Si ya tenemos los datos del préstamo, seleccionar automáticamente la próxima cuota
+      if (prestamo?.cuotas) {
+        const cuotasOrdenadas = prestamo.cuotas.sort((a, b) => a.numero_cuota - b.numero_cuota);
+        const proximaCuota = cuotasOrdenadas.find(cuota => cuota.estado !== 'PAGADA');
+        
+        setFormData({
+          numero_cuota: proximaCuota ? proximaCuota.numero_cuota.toString() : '',
+          monto: ''
+        });
+      } else {
+        setFormData({
+          numero_cuota: '',
+          monto: ''
+        });
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, prestamo]);
 
   const fetchPrestamo = async () => {
     setLoadingPrestamo(true);
@@ -65,12 +76,16 @@ const PagarCuotaModal = ({ isOpen, onClose, prestamoId, onSuccess }) => {
   const getCuotaOptions = () => {
     if (!prestamo?.cuotas) return [];
 
-    return prestamo.cuotas
-      .filter(cuota => cuota.estado !== 'PAGADA')
-      .map(cuota => ({
-        value: cuota.numero_cuota,
-        label: `Cuota ${cuota.numero_cuota} - ${formatDate(cuota.fecha_vencimiento)} - ${formatCurrency(cuota.monto_esperado - cuota.monto_pagado)} pendiente`
-      }));
+    // Ordenar las cuotas por número y encontrar la primera no pagada
+    const cuotasOrdenadas = prestamo.cuotas.sort((a, b) => a.numero_cuota - b.numero_cuota);
+    const proximaCuota = cuotasOrdenadas.find(cuota => cuota.estado !== 'PAGADA');
+
+    if (!proximaCuota) return [];
+
+    return [{
+      value: proximaCuota.numero_cuota,
+      label: `Cuota ${proximaCuota.numero_cuota} - ${formatDate(proximaCuota.fecha_vencimiento)} - ${formatCurrency(proximaCuota.monto_esperado - proximaCuota.monto_pagado)} pendiente`
+    }];
   };
 
   const getCuotaSeleccionada = () => {
@@ -178,10 +193,7 @@ const PagarCuotaModal = ({ isOpen, onClose, prestamoId, onSuccess }) => {
                   name="numero_cuota"
                   value={formData.numero_cuota}
                   onChange={handleChange}
-                  options={[
-                    { value: '', label: 'Seleccionar cuota' },
-                    ...getCuotaOptions()
-                  ]}
+                  options={getCuotaOptions().length > 0 ? getCuotaOptions() : [{ value: '', label: 'No hay cuotas pendientes' }]}
                   required
                 />
               </div>
