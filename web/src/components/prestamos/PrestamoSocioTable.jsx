@@ -34,6 +34,8 @@ const PrestamoSocioTable = ({
         return 'primary';
       case 'VENCIDO':
         return 'destructive';
+      case 'PENDIENTE':
+        return 'warning';
       default:
         return 'secondary';
     }
