@@ -17,7 +17,7 @@ const Prestamos = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [perPage] = useState(10);
+  const [perPage] = useState(6);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { user } = useAuth();
