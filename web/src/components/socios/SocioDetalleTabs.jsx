@@ -7,14 +7,26 @@ import Button from '../shared/Button';
 import AhorrosResumen from '../ahorros/AhorrosResumen';
 import AhorrosTable from '../ahorros/AhorrosTable';
 import AhorrosFiltros from '../ahorros/AhorrosFiltros';
+import PrestamoSocioTable from '../prestamos/PrestamoSocioTable';
 import Pagination from '../shared/Pagination';
 import { ahorrosAPI } from '../../services/api/ahorros';
+import { prestamosAPI } from '../../services/api/prestamos';
 import { formatDateForEcuador } from '../../utils/dateUtils';
 
 const SocioDetalleTabs = ({ socio }) => {
   const [activeTab, setActiveTab] = useState('datos');
   const [estadoCuenta, setEstadoCuenta] = useState(null);
   const [loadingEstado, setLoadingEstado] = useState(false);
+  
+  // Estados para préstamos
+  const [prestamos, setPrestamos] = useState([]);
+  const [loadingPrestamos, setLoadingPrestamos] = useState(false);
+  const [paginationPrestamos, setPaginationPrestamos] = useState({
+    current_page: 1,
+    per_page: 6,
+    last_page: 1,
+    total: 0
+  });
   const [paginationMovimientos, setPaginationMovimientos] = useState({
     current_page: 1,
     per_page: 6,
@@ -123,12 +135,59 @@ const SocioDetalleTabs = ({ socio }) => {
     }));
   };
 
+  // Función para cargar préstamos del socio
+  const fetchPrestamos = async () => {
+    if (!socio?.id) return;
+    
+    setLoadingPrestamos(true);
+    try {
+      // Usar el endpoint general con filtro de socio_id
+      const response = await axios.get('/prestamos', {
+        params: {
+          socio_id: socio.id,
+          page: paginationPrestamos.current_page,
+          per_page: paginationPrestamos.per_page
+        }
+      });
+      
+      if (response.data.success) {
+        setPrestamos(response.data.data.data || []);
+        setPaginationPrestamos({
+          current_page: response.data.data.current_page,
+          last_page: response.data.data.last_page,
+          total: response.data.data.total,
+          per_page: paginationPrestamos.per_page
+        });
+      }
+    } catch (error) {
+      console.error('Error al cargar préstamos:', error);
+      showError('Error al cargar préstamos');
+    } finally {
+      setLoadingPrestamos(false);
+    }
+  };
+
+  // Función para manejar cambio de página de préstamos
+  const handlePageChangePrestamos = (page) => {
+    setPaginationPrestamos(prev => ({
+      ...prev,
+      current_page: page
+    }));
+  };
+
   // Cargar aportes cuando cambie la pestaña, filtros o página
   React.useEffect(() => {
     if (activeTab === 'ahorros') {
       fetchAportesAhorro();
     }
   }, [activeTab, filtrosAhorro, paginationAhorro.current_page, socio?.id]);
+
+  // Cargar préstamos cuando cambie la pestaña o página
+  React.useEffect(() => {
+    if (activeTab === 'prestamos') {
+      fetchPrestamos();
+    }
+  }, [activeTab, paginationPrestamos.current_page, socio?.id]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -255,23 +314,35 @@ const SocioDetalleTabs = ({ socio }) => {
         )}
 
         {activeTab === 'prestamos' && (
-          <div className="p-6 pb-24"> {/* SCROLL-FIX: Padding bottom for sticky pagination */}
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-semibold text-gray-900">
-                Préstamos del Socio
-              </h4>
-              {canModify && (
-                <Button
-                  variant="primary"
-                  onClick={() => window.location.href = `/prestamos?search=${socio.cedula}`}
-                >
-                  Ver Préstamos
-                </Button>
-              )}
+          <div className="flex flex-col h-full min-h-0"> {/* SCROLL-FIX: Flex column for Préstamos content */}
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar"> {/* SCROLL-FIX: Scrollable content for Préstamos */}
+              <div className="p-6 pb-24 space-y-6"> {/* SCROLL-FIX: Add padding bottom for sticky pagination */}
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium text-gray-900">Préstamos del Socio</h3>
+                </div>
+
+                {/* Tabla de préstamos */}
+                <PrestamoSocioTable
+                  prestamos={prestamos}
+                  loading={loadingPrestamos}
+                />
+              </div>
             </div>
-            <p className="text-gray-600">
-              Para ver los préstamos de este socio, haga clic en "Ver Préstamos" o navegue a la sección de Préstamos.
-            </p>
+            {/* SCROLL-FIX: Paginación para préstamos - sticky al fondo */}
+            {paginationPrestamos.last_page > 1 && (
+              <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t border-gray-200 p-4 flex-shrink-0"> {/* SCROLL-FIX: Sticky pagination */}
+                <Pagination
+                  currentPage={paginationPrestamos.current_page}
+                  totalPages={paginationPrestamos.last_page}
+                  totalItems={paginationPrestamos.total}
+                  perPage={paginationPrestamos.per_page}
+                  onPageChange={handlePageChangePrestamos}
+                  showInfo={true}
+                  showFirstLast={true}
+                  maxVisiblePages={5}
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -415,7 +486,6 @@ const SocioDetalleTabs = ({ socio }) => {
                 loading={loadingAportes}
                 onRefresh={fetchAportesAhorro}
                 showSocio={false}
-                allowDelete={false}
                 pagination={paginationAhorro.last_page > 1 ? paginationAhorro : null}
                 onPageChange={paginationAhorro.last_page > 1 ? handlePageChangeAhorro : null}
               />

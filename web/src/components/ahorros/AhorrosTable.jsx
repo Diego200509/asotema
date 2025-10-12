@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
-import { ahorrosAPI } from '../../services/api/ahorros';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Badge from '../shared/Badge';
-import Button from '../shared/Button';
-import ConfirmModal from '../shared/ConfirmModal';
 import Pagination from '../shared/Pagination';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon } from '@heroicons/react/24/outline';
 import { formatDateForEcuador } from '../../utils/dateUtils';
 
 const AhorrosTable = ({ 
@@ -14,16 +10,10 @@ const AhorrosTable = ({
   loading, 
   onRefresh,
   showSocio = false,
-  allowDelete = true,
   pagination = null,
   onPageChange = null
 }) => {
-  const { user } = useAuth();
-  const { showSuccess, showError } = useToast();
-  
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
-
-  const canModify = allowDelete && (user?.rol === 'ADMIN' || user?.rol === 'TESORERO');
+  const navigate = useNavigate();
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-EC', {
@@ -58,25 +48,8 @@ const AhorrosTable = ({
     }
   };
 
-  const handleDelete = async (aporte) => {
-    setDeleteConfirm({
-      title: 'Eliminar Aporte',
-      message: `¿Estás seguro de que deseas eliminar este ${aporte.tipo.toLowerCase()} de ${formatCurrency(aporte.monto)}?`,
-      onConfirm: async () => {
-        try {
-          const response = await ahorrosAPI.eliminarAporte(aporte.id);
-          if (response.success) {
-            showSuccess('Aporte eliminado exitosamente');
-            onRefresh && onRefresh();
-          }
-        } catch (error) {
-          console.error('Error al eliminar aporte:', error);
-          showError(error.response?.data?.message || 'Error al eliminar el aporte');
-        } finally {
-          setDeleteConfirm(null);
-        }
-      }
-    });
+  const handleViewSocio = (socioId) => {
+    navigate(`/socios/${socioId}`);
   };
 
   if (loading) {
@@ -146,7 +119,7 @@ const AhorrosTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Registrado por
                 </th>
-                {canModify && (
+                {showSocio && (
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
                   </th>
@@ -198,17 +171,15 @@ const AhorrosTable = ({
                       </div>
                     </div>
                   </td>
-                  {canModify && (
+                  {showSocio && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(aporte)}
-                        className="inline-flex items-center"
+                      <button
+                        onClick={() => handleViewSocio(aporte.socio_id)}
+                        className="text-blue-600 hover:text-blue-700 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                        title="Ver ahorros del socio"
                       >
-                        <TrashIcon className="h-4 w-4 mr-1" />
-                        Eliminar
-                      </Button>
+                        <EyeIcon className="h-5 w-5" />
+                      </button>
                     </td>
                   )}
                 </tr>
@@ -233,16 +204,6 @@ const AhorrosTable = ({
         )}
       </div>
 
-      {/* Modal de confirmación */}
-      {deleteConfirm && (
-        <ConfirmModal
-          isOpen={!!deleteConfirm}
-          title={deleteConfirm.title}
-          message={deleteConfirm.message}
-          onConfirm={deleteConfirm.onConfirm}
-          onCancel={() => setDeleteConfirm(null)}
-        />
-      )}
     </>
   );
 };
