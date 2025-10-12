@@ -48,18 +48,27 @@ export const formatDateForInput = (date) => {
 export const formatDateForEcuador = (dateString, monthsToAdd = 0) => {
   if (!dateString) return '';
   
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return '';
+  // Si ya es una fecha en formato ISO o tiene formato completo, usarla directamente
+  let ecuadorDate;
+  if (dateString.includes('T') || dateString.includes(' ')) {
+    // Es una fecha completa con hora
+    ecuadorDate = new Date(dateString);
+  } else {
+    // Es solo fecha (YYYY-MM-DD), agregar zona horaria de Ecuador
+    ecuadorDate = new Date(dateString + 'T00:00:00-05:00');
+  }
+  
+  if (isNaN(ecuadorDate.getTime())) return '';
   
   // Agregar meses si es necesario
   if (monthsToAdd > 0) {
-    date.setMonth(date.getMonth() + monthsToAdd);
+    ecuadorDate.setMonth(ecuadorDate.getMonth() + monthsToAdd);
   }
   
   // Formatear para Ecuador (DD/MM/YYYY)
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
+  const day = String(ecuadorDate.getDate()).padStart(2, '0');
+  const month = String(ecuadorDate.getMonth() + 1).padStart(2, '0');
+  const year = ecuadorDate.getFullYear();
   
   return `${day}/${month}/${year}`;
 };

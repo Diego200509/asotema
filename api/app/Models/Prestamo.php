@@ -22,7 +22,7 @@ class Prestamo extends Model
     protected $casts = [
         'capital' => 'decimal:2',
         'tasa_mensual' => 'decimal:4',
-        'fecha_inicio' => 'date',
+        'fecha_inicio' => 'date:Y-m-d',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -106,5 +106,14 @@ class Prestamo extends Model
     public function getCompletamentePagadoAttribute()
     {
         return $this->monto_pendiente <= 0;
+    }
+
+    /**
+     * Accessor para formatear fecha_inicio en zona horaria de Ecuador
+     */
+    public function getFechaInicioAttribute($value)
+    {
+        if (!$value) return null;
+        return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m-d');
     }
 }

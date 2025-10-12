@@ -22,7 +22,7 @@ class Socio extends Model
     ];
 
     protected $casts = [
-        'fecha_ingreso' => 'datetime',
+        'fecha_ingreso' => 'date:Y-m-d',
     ];
 
     protected $appends = ['nombre_completo'];
@@ -105,6 +105,45 @@ class Socio extends Model
     public function prestamos()
     {
         return $this->hasMany(Prestamo::class);
+    }
+
+    /**
+     * Mutator para asegurar que fecha_ingreso se guarde correctamente
+     */
+    public function setFechaIngresoAttribute($value)
+    {
+        if (!$value) {
+            $this->attributes['fecha_ingreso'] = null;
+            return;
+        }
+        
+        // Si viene como datetime, extraer solo la fecha
+        if (strpos($value, ' ') !== false) {
+            $value = explode(' ', $value)[0];
+        }
+        
+        // Si viene como datetime con T, extraer solo la fecha
+        if (strpos($value, 'T') !== false) {
+            $value = explode('T', $value)[0];
+        }
+        
+        // Asegurar que se guarde en zona horaria de Ecuador
+        $this->attributes['fecha_ingreso'] = \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m-d');
+    }
+
+    /**
+     * Accessor para formatear fecha_ingreso en zona horaria de Ecuador
+     */
+    public function getFechaIngresoAttribute($value)
+    {
+        if (!$value) return null;
+        
+        // Si viene como datetime, extraer solo la fecha
+        if (strpos($value, ' ') !== false) {
+            $value = explode(' ', $value)[0];
+        }
+        
+        return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m-d');
     }
 }
 

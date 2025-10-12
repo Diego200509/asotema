@@ -30,8 +30,8 @@ class PrestamoService
                 throw new \Exception("El socio no existe o no está activo");
             }
 
-            // Si no se proporciona fecha de inicio, usar la fecha actual
-            $fechaInicioFinal = $fechaInicio ?: now()->toDateString();
+            // Si no se proporciona fecha de inicio, usar la fecha actual en Ecuador
+            $fechaInicioFinal = $fechaInicio ?: now('America/Guayaquil')->toDateString();
 
             // Crear el préstamo
             $prestamo = Prestamo::create([
@@ -63,7 +63,7 @@ class PrestamoService
         $capital = $prestamo->capital;
         $tasa = $prestamo->tasa_mensual;
         $plazo = $prestamo->plazo_meses;
-        $fechaInicio = Carbon::parse($prestamo->fecha_inicio);
+        $fechaInicio = Carbon::createFromFormat('Y-m-d', $prestamo->fecha_inicio, 'America/Guayaquil');
 
         // Interés fijo del 1% sobre el capital total
         $interesFijo = $capital * $tasa;

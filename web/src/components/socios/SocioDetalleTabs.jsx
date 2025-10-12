@@ -9,6 +9,7 @@ import AhorrosTable from '../ahorros/AhorrosTable';
 import AhorrosFiltros from '../ahorros/AhorrosFiltros';
 import Pagination from '../shared/Pagination';
 import { ahorrosAPI } from '../../services/api/ahorros';
+import { formatDateForEcuador } from '../../utils/dateUtils';
 
 const SocioDetalleTabs = ({ socio }) => {
   const [activeTab, setActiveTab] = useState('datos');
@@ -50,12 +51,8 @@ const SocioDetalleTabs = ({ socio }) => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-EC', {
-      timeZone: 'America/Guayaquil',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
+    if (!dateString) return 'N/A';
+    return formatDateForEcuador(dateString, 0);
   };
 
   const fetchEstadoCuenta = async () => {

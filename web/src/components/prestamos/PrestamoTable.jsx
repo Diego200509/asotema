@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Badge from '../shared/Badge';
 import { EyeIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { formatDateForEcuador } from '../../utils/dateUtils';
 
 const PrestamoTable = ({ prestamos, loading, onView, canModify }) => {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ const PrestamoTable = ({ prestamos, loading, onView, canModify }) => {
                 {prestamo.plazo_meses} meses
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {new Date(prestamo.fecha_inicio).toLocaleDateString('es-EC')}
+                {formatDateForEcuador(prestamo.fecha_inicio, 0)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <Badge variant={getEstadoBadgeVariant(prestamo.estado)}>

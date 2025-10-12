@@ -8,7 +8,9 @@ import Card from '../components/shared/Card';
 import Badge from '../components/shared/Badge';
 import Button from '../components/shared/Button';
 import PagarCuotaModal from '../components/prestamos/PagarCuotaModal';
+import Pagination from '../components/shared/Pagination';
 import { ArrowLeftIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { formatDateForEcuador } from '../utils/dateUtils';
 
 const PrestamoDetalle = () => {
   const { id } = useParams();
@@ -19,6 +21,10 @@ const PrestamoDetalle = () => {
   const [prestamo, setPrestamo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPagarModal, setShowPagarModal] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    per_page: 6
+  });
 
   const canPagar = user && (user.rol === 'ADMIN' || user.rol === 'TESORERO' || user.rol === 'CAJERO');
 
@@ -46,17 +52,14 @@ const PrestamoDetalle = () => {
     return new Intl.NumberFormat('es-EC', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
     }).format(amount);
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('es-EC', {
-      timeZone: 'America/Guayaquil',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
+    if (!dateString) return 'N/A';
+    return formatDateForEcuador(dateString, 0);
   };
 
   const getEstadoBadgeVariant = (estado) => {
@@ -75,6 +78,31 @@ const PrestamoDetalle = () => {
       case 'PARCIAL': return 'info';
       default: return 'secondary';
     }
+  };
+
+  // Función para manejar cambio de página
+  const handlePageChange = (page) => {
+    setPagination(prev => ({ ...prev, page }));
+  };
+
+  // Función para obtener cuotas paginadas
+  const getCuotasPaginadas = () => {
+    if (!prestamo?.cuotas) return [];
+    
+    const startIndex = (pagination.page - 1) * pagination.per_page;
+    const endIndex = startIndex + pagination.per_page;
+    
+    return prestamo.cuotas.slice(startIndex, endIndex);
+  };
+
+  // Función para calcular información de paginación
+  const getPaginationInfo = () => {
+    if (!prestamo?.cuotas) return { total: 0, last_page: 1 };
+    
+    const total = prestamo.cuotas.length;
+    const last_page = Math.ceil(total / pagination.per_page);
+    
+    return { total, last_page };
   };
 
   if (loading) {
@@ -97,13 +125,13 @@ const PrestamoDetalle = () => {
     );
   }
 
-  const totalEsperado = prestamo.cuotas?.reduce((sum, cuota) => sum + cuota.monto_esperado, 0) || 0;
-  const totalPagado = prestamo.cuotas?.reduce((sum, cuota) => sum + cuota.monto_pagado, 0) || 0;
-  const totalPendiente = totalEsperado - totalPagado;
+  const totalEsperado = Math.round((prestamo.cuotas?.reduce((sum, cuota) => sum + (parseFloat(cuota.monto_esperado) || 0), 0) || 0) * 100) / 100;
+  const totalPagado = Math.round((prestamo.cuotas?.reduce((sum, cuota) => sum + (parseFloat(cuota.monto_pagado) || 0), 0) || 0) * 100) / 100;
+  const totalPendiente = Math.round((totalEsperado - totalPagado) * 100) / 100;
 
   return (
     <Layout>
-      <div className="h-full flex flex-col space-y-6">
+      <div className="h-full flex flex-col space-y-6 overflow-y-auto custom-scrollbar">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -258,7 +286,7 @@ const PrestamoDetalle = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {prestamo.cuotas?.map((cuota) => (
+                {getCuotasPaginadas().map((cuota) => (
                   <tr key={cuota.numero_cuota} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {cuota.numero_cuota}
@@ -287,6 +315,17 @@ const PrestamoDetalle = () => {
                 ))}
               </tbody>
             </table>
+            
+            {/* Paginación */}
+            {getPaginationInfo().last_page > 1 && (
+              <div className="mt-4 flex justify-center">
+                <Pagination
+                  currentPage={pagination.page}
+                  lastPage={getPaginationInfo().last_page}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
           </div>
         </Card>
       </div>

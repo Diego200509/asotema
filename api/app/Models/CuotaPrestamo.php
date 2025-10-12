@@ -24,7 +24,7 @@ class CuotaPrestamo extends Model
     ];
 
     protected $casts = [
-        'fecha_vencimiento' => 'date',
+        'fecha_vencimiento' => 'date:Y-m-d',
         'monto_esperado' => 'decimal:2',
         'parte_interes' => 'decimal:2',
         'parte_capital' => 'decimal:2',
@@ -106,5 +106,14 @@ class CuotaPrestamo extends Model
     {
         return $this->fecha_vencimiento < now()->toDateString() && 
                !$this->completamente_pagada;
+    }
+
+    /**
+     * Accessor para formatear fecha_vencimiento en zona horaria de Ecuador
+     */
+    public function getFechaVencimientoAttribute($value)
+    {
+        if (!$value) return null;
+        return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m-d');
     }
 }
