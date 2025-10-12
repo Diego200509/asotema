@@ -1,49 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import Input from '../shared/Input';
 import Select from '../shared/Select';
+import SelectSocio from '../shared/SelectSocio';
 import axios from '../../config/axios';
 
 const PrestamoFormFields = ({ formData, onChange }) => {
-  const [socios, setSocios] = useState([]);
-  const [loadingSocios, setLoadingSocios] = useState(true);
-
-  useEffect(() => {
-    fetchSocios();
-  }, []);
-
-  const fetchSocios = async () => {
-    try {
-      const response = await axios.get('/socios');
-      if (response.data.success) {
-        setSocios(response.data.data.data || []);
+  // Manejar cambio del SelectSocio
+  const handleSocioChange = (selectedSocio) => {
+    // El onChange del SelectSocio devuelve {id, cedula, nombreCompleto}
+    // Necesitamos adaptarlo al formato esperado por el formulario
+    const syntheticEvent = {
+      target: {
+        name: 'socio_id',
+        value: selectedSocio ? selectedSocio.id : ''
       }
-    } catch (error) {
-      console.error('Error al cargar socios:', error);
-    } finally {
-      setLoadingSocios(false);
-    }
+    };
+    onChange(syntheticEvent);
   };
-
-  const socioOptions = socios.map(socio => ({
-    value: socio.id,
-    label: `${socio.nombres} ${socio.apellidos} (${socio.cedula})`
-  }));
 
   return (
     <div className="space-y-4">
       {/* Socio */}
       <div>
-        <Select
-          label="Socio *"
-          name="socio_id"
-          value={formData.socio_id}
-          onChange={onChange}
-          options={[
-            { value: '', label: loadingSocios ? 'Cargando socios...' : 'Seleccionar socio' },
-            ...socioOptions
-          ]}
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Socio *
+        </label>
+        <SelectSocio
+          value={formData.selectedSocio}
+          onChange={handleSocioChange}
+          placeholder="Buscar por nombre o cédula..."
+          className="w-full"
           required
-          disabled={loadingSocios}
         />
       </div>
 

@@ -12,6 +12,7 @@ const PrestamoModal = ({ isOpen, onClose, onSuccess }) => {
 
   const [formData, setFormData] = useState({
     socio_id: '',
+    selectedSocio: null,
     capital: '',
     plazo_meses: '',
     fecha_inicio: getCurrentDateEcuador()
@@ -24,6 +25,7 @@ const PrestamoModal = ({ isOpen, onClose, onSuccess }) => {
       // Reset form when modal opens with current Ecuador date
       setFormData({
         socio_id: '',
+        selectedSocio: null,
         capital: '',
         plazo_meses: '',
         fecha_inicio: getCurrentDateEcuador()
