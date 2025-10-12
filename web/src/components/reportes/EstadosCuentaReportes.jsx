@@ -569,7 +569,7 @@ const PrestamosReporte = ({ socio }) => {
         <div className="bg-blue-50 p-4 rounded-lg">
           <div className="text-sm font-medium text-blue-800">Préstamos Activos</div>
           <div className="text-2xl font-bold text-blue-900">
-            {prestamos.length}
+            {prestamos.filter(p => p.estado === 'ACTIVO' || p.estado === 'PENDIENTE').length}
           </div>
         </div>
         <div className="bg-purple-50 p-4 rounded-lg">

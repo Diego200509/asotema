@@ -256,7 +256,7 @@
             </div>
             <div class="resumen-card blue">
                 <h3>Préstamos Activos</h3>
-                <div class="value">{{ collect($prestamos->data ?? [])->where('estado', 'ACTIVO')->count() }}</div>
+                <div class="value">{{ collect($prestamos->data ?? [])->filter(function($p) { return $p->estado === 'ACTIVO' || $p->estado === 'PENDIENTE'; })->count() }}</div>
             </div>
             <div class="resumen-card purple">
                 <h3>Total Pagado</h3>
@@ -286,6 +286,8 @@
                         <th>Tasa Interés</th>
                         <th>Plazo</th>
                         <th>Estado</th>
+                        <th>Cuotas Pagadas</th>
+                        <th>Cuotas Pendientes</th>
                         <th>Pagado</th>
                         <th>Pendiente</th>
                     </tr>
@@ -302,6 +304,8 @@
                                     {{ $prestamo->estado }}
                                 </span>
                             </td>
+                            <td class="fecha">{{ collect($prestamo->cuotas ?? [])->filter(function($cuota) { return $cuota->estado === 'PAGADA'; })->count() }}</td>
+                            <td class="fecha">{{ collect($prestamo->cuotas ?? [])->filter(function($cuota) { return $cuota->estado === 'PENDIENTE' || $cuota->estado === 'PARCIAL'; })->count() }}</td>
                             <td class="monto" style="color: #16a34a;">${{ number_format(collect($prestamo->cuotas ?? [])->sum('monto_pagado'), 2) }}</td>
                             <td class="monto" style="color: #dc2626;">${{ number_format(collect($prestamo->cuotas ?? [])->sum(function($cuota) { return $cuota->monto_esperado - $cuota->monto_pagado; }), 2) }}</td>
                         </tr>
