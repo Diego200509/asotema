@@ -4,7 +4,6 @@ import { useToast } from '../../context/ToastContext';
 import axios from '../../config/axios';
 import Badge from '../shared/Badge';
 import Button from '../shared/Button';
-import PDFPreview from '../shared/PDFPreview';
 import AhorrosResumen from '../ahorros/AhorrosResumen';
 import AhorrosTable from '../ahorros/AhorrosTable';
 import AhorrosFiltros from '../ahorros/AhorrosFiltros';
@@ -324,21 +323,10 @@ const SocioDetalleTabs = ({ socio }) => {
         {activeTab === 'estado' && (
           <div className="p-6 pb-24"> {/* SCROLL-FIX: Padding bottom for sticky pagination */}
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
+              <div>
                 <h4 className="text-lg font-semibold text-gray-900">
                   Estado de Cuenta
                 </h4>
-                {estadoCuenta && (
-                  <PDFPreview
-                    url={`/socios/${socio.id}/estado-cuenta/pdf`}
-                    filename={`estado_cuenta_${socio.cedula}_${socio.nombres}_${socio.apellidos}.pdf`}
-                    previewButtonText="Vista Previa"
-                    downloadButtonText="Descargar PDF"
-                    showBothButtons={true}
-                    buttonVariant="outline"
-                    downloadButtonVariant="secondary"
-                  />
-                )}
               </div>
 
               {loadingEstado ? (
