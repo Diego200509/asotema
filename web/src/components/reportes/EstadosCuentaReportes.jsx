@@ -65,8 +65,8 @@ const EstadosCuentaReportes = () => {
   // Si hay un socio seleccionado, mostrar el detalle de reportes
   if (selectedSocio) {
     return (
-      <div className="h-full flex flex-col">
-        <div className="mb-6">
+      <div className="h-[calc(100vh-115px)] flex flex-col">
+        <div className="flex-shrink-0 mb-6">
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={handleBack}
@@ -86,7 +86,9 @@ const EstadosCuentaReportes = () => {
           </div>
         </div>
 
-        <ReporteSocioDetalle socio={selectedSocio} />
+        <div className="flex-1 min-h-0">
+          <ReporteSocioDetalle socio={selectedSocio} />
+        </div>
       </div>
     );
   }
@@ -235,9 +237,9 @@ const ReporteSocioDetalle = ({ socio }) => {
   ];
 
   return (
-    <Card className="flex-1 flex flex-col">
+    <div className="h-full flex flex-col border border-gray-200 rounded-lg bg-white">
       {/* Pestañas */}
-      <div className="border-b border-gray-200">
+      <div className="flex-shrink-0 border-b border-gray-200 bg-white">
         <nav className="-mb-px flex space-x-8 px-6">
           {tabs.map((tab) => (
             <button
@@ -255,11 +257,11 @@ const ReporteSocioDetalle = ({ socio }) => {
         </nav>
       </div>
 
-      {/* Contenido de las pestañas */}
-      <div className="flex-1 overflow-hidden">
+      {/* Contenido de las pestañas con scroll */}
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-white">
         {tabs.find(tab => tab.id === activeTab)?.component}
       </div>
-    </Card>
+    </div>
   );
 };
 
@@ -316,7 +318,7 @@ const EstadoCuentaReporte = ({ socio }) => {
   }
 
   return (
-    <div className="p-6 h-full flex flex-col">
+    <div className="p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           Estado de Cuenta General
@@ -327,7 +329,7 @@ const EstadoCuentaReporte = ({ socio }) => {
       </div>
 
       {estadoCuenta && (
-        <div className="flex-1 flex flex-col">
+        <div className="flex flex-col">
           {/* Resumen */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-green-50 p-4 rounded-lg">
@@ -435,7 +437,7 @@ const AhorrosReporte = ({ socio }) => {
   }
 
   return (
-    <div className="p-6 h-full flex flex-col">
+    <div className="p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           Reporte de Ahorros
@@ -548,7 +550,7 @@ const PrestamosReporte = ({ socio }) => {
   };
 
   return (
-    <div className="p-6 h-full flex flex-col">
+    <div className="p-6">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">
           Reporte de Préstamos
