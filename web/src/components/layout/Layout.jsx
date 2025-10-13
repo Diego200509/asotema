@@ -6,7 +6,18 @@ import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const [activeSection, setActiveSection] = useState('socios');
+  
+  // Función para determinar la sección activa basada en la ruta
+  const getActiveSectionFromPath = (path) => {
+    if (path.startsWith('/usuarios')) return 'usuarios';
+    if (path.startsWith('/socios')) return 'socios';
+    if (path.startsWith('/prestamos')) return 'prestamos';
+    if (path.startsWith('/ahorros')) return 'ahorros';
+    if (path.startsWith('/reportes')) return 'reportes';
+    return 'socios'; // fallback por defecto
+  };
+  
+  const [activeSection, setActiveSection] = useState(() => getActiveSectionFromPath(location.pathname));
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Cargar el estado del sidebar desde localStorage
     const saved = localStorage.getItem('sidebarCollapsed');
@@ -15,21 +26,11 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-      // Detectar la sección activa según la ruta actual
-      useEffect(() => {
-        const path = location.pathname;
-        if (path.startsWith('/usuarios')) {
-          setActiveSection('usuarios');
-        } else if (path.startsWith('/socios')) {
-          setActiveSection('socios');
-        } else if (path.startsWith('/prestamos')) {
-          setActiveSection('prestamos');
-        } else if (path.startsWith('/ahorros')) {
-          setActiveSection('ahorros');
-        } else if (path.startsWith('/reportes')) {
-          setActiveSection('reportes');
-        }
-      }, [location]);
+  // Detectar la sección activa según la ruta actual
+  useEffect(() => {
+    const newActiveSection = getActiveSectionFromPath(location.pathname);
+    setActiveSection(newActiveSection);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await logout();
