@@ -6,6 +6,7 @@ use App\Http\Controllers\SocioController;
 use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\AhorroController;
+use App\Http\Controllers\EventoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -108,6 +109,29 @@ Route::middleware(['auth:api'])->group(function () {
             Route::post('/deposito-lote', [AhorroController::class, 'depositoLote']);
             Route::post('/retiro', [AhorroController::class, 'retiro']);
             Route::delete('/{id}', [AhorroController::class, 'destroy']);
+        });
+    });
+
+    // Rutas CRUD de eventos
+    Route::prefix('eventos')->group(function () {
+        // Lectura para todos los roles autenticados
+        Route::get('/', [EventoController::class, 'index']);
+        Route::get('/{evento}', [EventoController::class, 'show']);
+        Route::get('/socios/para-evento', [EventoController::class, 'sociosParaEvento']);
+
+        // Crear, editar y eliminar solo para ADMIN y TESORERO
+        Route::middleware(['role:ADMIN,TESORERO'])->group(function () {
+            Route::post('/', [EventoController::class, 'store']);
+            Route::put('/{evento}', [EventoController::class, 'update']);
+            Route::delete('/{evento}', [EventoController::class, 'destroy']);
+            Route::post('/{evento}/asistentes', [EventoController::class, 'agregarAsistentes']);
+            Route::post('/{evento}/contabilizar', [EventoController::class, 'contabilizar']);
+            Route::post('/{evento}/reversar', [EventoController::class, 'reversar']);
+        });
+
+        // Marcar asistencia para ADMIN, TESORERO y CAJERO
+        Route::middleware(['role:ADMIN,TESORERO,CAJERO'])->group(function () {
+            Route::post('/{evento}/toggle-asistencia', [EventoController::class, 'toggleAsistencia']);
         });
     });
 });
