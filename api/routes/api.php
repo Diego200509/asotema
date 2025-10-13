@@ -116,8 +116,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::prefix('eventos')->group(function () {
         // Lectura para todos los roles autenticados
         Route::get('/', [EventoController::class, 'index']);
-        Route::get('/{evento}', [EventoController::class, 'show']);
         Route::get('/socios/para-evento', [EventoController::class, 'sociosParaEvento']);
+        Route::get('/{evento}', [EventoController::class, 'show']);
 
         // Crear, editar y eliminar solo para ADMIN y TESORERO
         Route::middleware(['role:ADMIN,TESORERO'])->group(function () {

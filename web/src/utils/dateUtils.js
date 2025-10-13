@@ -74,6 +74,26 @@ export const formatDateForEcuador = (dateString, monthsToAdd = 0) => {
 };
 
 /**
+ * Obtiene la fecha y hora actual en formato YYYY-MM-DDTHH:mm para datetime-local
+ * @returns {string} Fecha y hora en formato YYYY-MM-DDTHH:mm
+ */
+export const getCurrentDateTimeEcuador = () => {
+  const now = new Date();
+  
+  // Usar toLocaleString con zona horaria de Ecuador
+  const ecuadorDate = new Date(now.toLocaleString("en-US", {timeZone: "America/Guayaquil"}));
+  
+  // Formatear a YYYY-MM-DDTHH:mm
+  const year = ecuadorDate.getFullYear();
+  const month = String(ecuadorDate.getMonth() + 1).padStart(2, '0');
+  const day = String(ecuadorDate.getDate()).padStart(2, '0');
+  const hours = String(ecuadorDate.getHours()).padStart(2, '0');
+  const minutes = String(ecuadorDate.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+/**
  * Valida si una fecha es válida para fecha de ingreso (hasta hoy en Ecuador)
  * @param {string} date - Fecha a validar en formato YYYY-MM-DD
  * @returns {boolean} true si la fecha es válida

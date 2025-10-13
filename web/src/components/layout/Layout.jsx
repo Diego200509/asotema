@@ -13,6 +13,7 @@ const Layout = ({ children }) => {
     if (path.startsWith('/socios')) return 'socios';
     if (path.startsWith('/prestamos')) return 'prestamos';
     if (path.startsWith('/ahorros')) return 'ahorros';
+    if (path.startsWith('/eventos')) return 'eventos';
     if (path.startsWith('/reportes')) return 'reportes';
     return 'socios'; // fallback por defecto
   };
@@ -48,6 +49,8 @@ const Layout = ({ children }) => {
           navigate('/prestamos');
         } else if (section === 'ahorros') {
           navigate('/ahorros/historico');
+        } else if (section === 'eventos') {
+          navigate('/eventos');
         } else if (section === 'reportes') {
           navigate('/reportes');
         }

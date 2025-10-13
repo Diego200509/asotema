@@ -11,6 +11,8 @@ import Prestamos from './pages/Prestamos';
 import PrestamoDetalle from './pages/PrestamoDetalle';
 import AhorrosLote from './pages/AhorrosLote';
 import AhorrosHistorico from './pages/AhorrosHistorico';
+import Eventos from './pages/Eventos';
+import EventoDetalle from './pages/EventoDetalle';
 import Reportes from './pages/Reportes';
 
 function App() {
@@ -98,6 +100,24 @@ function App() {
               element={
                 <ProtectedRoute>
                   <AhorrosHistorico />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Rutas de Eventos (todos los roles autenticados) */}
+            <Route
+              path="/eventos"
+              element={
+                <ProtectedRoute>
+                  <Eventos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/eventos/:id"
+              element={
+                <ProtectedRoute>
+                  <EventoDetalle />
                 </ProtectedRoute>
               }
             />
