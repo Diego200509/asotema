@@ -9,7 +9,7 @@ import PDFPreview from '../shared/PDFPreview';
 import { EyeIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { formatDateForEcuador } from '../../utils/dateUtils';
 
-const EstadosCuentaReportes = () => {
+const EstadosCuentaReportes = ({ onBack }) => {
   const [socios, setSocios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,7 +18,7 @@ const EstadosCuentaReportes = () => {
   const { showError } = useToast();
   const navigate = useNavigate();
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 6;
 
   // Cargar socios
   const fetchSocios = async (page = 1) => {
@@ -97,15 +97,22 @@ const EstadosCuentaReportes = () => {
   return (
     <div className="h-full flex flex-col">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Estados de Cuenta</h1>
-        <p className="text-gray-600">Seleccione un socio para ver sus reportes</p>
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 px-3 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            Volver
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Estados de Cuenta</h1>
+            <p className="text-gray-600">Seleccione un socio para ver sus reportes</p>
+          </div>
+        </div>
       </div>
 
       <Card className="flex-1 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Lista de Socios</h2>
-        </div>
-
         <div className="flex-1 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -247,7 +254,7 @@ const ReporteSocioDetalle = ({ socio }) => {
               onClick={() => setActiveTab(tab.id)}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
-                  ? 'border-green-600 text-gray-900'
+                      ? 'border-green-600 text-gray-900'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >

@@ -18,7 +18,7 @@ const Reportes = () => {
   if (activeReport === 'estados-cuenta') {
     return (
       <Layout>
-        <EstadosCuentaReportes />
+        <EstadosCuentaReportes onBack={handleBack} />
       </Layout>
     );
   }
