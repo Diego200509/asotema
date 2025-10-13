@@ -40,7 +40,7 @@ class Socio extends Model
      */
     public function cuenta()
     {
-        return $this->morphOne(Cuenta::class, 'propietario', 'propietario_tipo', 'propietario_id')
+        return $this->hasOne(Cuenta::class, 'propietario_id', 'id')
             ->where('propietario_tipo', 'SOCIO');
     }
 

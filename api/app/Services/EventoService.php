@@ -80,7 +80,7 @@ class EventoService
                     'descripcion' => "Ingreso por evento: {$evento->nombre} - {$socio->nombre_completo}",
                     'ref_tipo' => 'EVENTO',
                     'ref_id' => $evento->id,
-                    'creado_por' => auth()->id(),
+                    'creado_por' => auth()->id() ?? $evento->creado_por,
                 ]);
 
                 $resultado['total_ingresos'] += $evento->precio_por_asistente;
@@ -102,7 +102,7 @@ class EventoService
                         'descripcion' => "Descuento por evento: {$evento->nombre}",
                         'ref_tipo' => 'EVENTO',
                         'ref_id' => $evento->id,
-                        'creado_por' => auth()->id(),
+                        'creado_por' => auth()->id() ?? $evento->creado_por,
                     ]);
 
                     $resultado['total_costos'] += $evento->costo_por_asistente;
@@ -123,7 +123,7 @@ class EventoService
                         'descripcion' => "Gasto por evento: {$evento->nombre} - {$socio->nombre_completo}",
                         'ref_tipo' => 'EVENTO',
                         'ref_id' => $evento->id,
-                        'creado_por' => auth()->id(),
+                        'creado_por' => auth()->id() ?? $evento->creado_por,
                     ]);
 
                     $resultado['total_costos'] += $evento->costo_por_asistente;
