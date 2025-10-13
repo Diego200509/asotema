@@ -31,6 +31,27 @@ class SocioController extends Controller
 
             // Paginación
             $perPage = $request->input('per_page', 6);
+            
+            // Si se solicita 'all', obtener todos los registros sin paginación
+            if ($perPage === 'all') {
+                $socios = $query->orderBy('apellidos', 'asc')
+                               ->orderBy('nombres', 'asc')
+                               ->get();
+                
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'data' => $socios,
+                        'meta' => [
+                            'current_page' => 1,
+                            'last_page' => 1,
+                            'per_page' => $socios->count(),
+                            'total' => $socios->count(),
+                        ]
+                    ],
+                ], 200);
+            }
+            
             $socios = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
             return response()->json([

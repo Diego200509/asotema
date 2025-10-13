@@ -242,7 +242,7 @@ class EventoController extends Controller
     public function toggleAsistencia(ToggleAsistenciaRequest $request, Evento $evento)
     {
         try {
-            $resultado = $this->eventoService->toggleAsistencia($evento, $request->socio_id);
+            $resultado = $this->eventoService->toggleAsistencia($evento, $request->socio_id, $request->asistio);
 
             return response()->json([
                 'success' => true,

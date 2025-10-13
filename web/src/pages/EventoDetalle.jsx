@@ -8,6 +8,7 @@ import AsistentesChecklist from '../components/eventos/AsistentesChecklist';
 import ResumenEvento from '../components/eventos/ResumenEvento';
 import ConfirmarAccionModal from '../components/eventos/ConfirmarAccionModal';
 import Badge from '../components/shared/Badge';
+import Layout from '../components/layout/Layout';
 
 const EventoDetalle = () => {
   const navigate = useNavigate();
@@ -158,30 +159,35 @@ const EventoDetalle = () => {
 
   if (loadingData) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Cargando evento...</div>
-      </div>
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Cargando evento...</div>
+        </div>
+      </Layout>
     );
   }
 
   if (!evento) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Evento no encontrado</div>
-      </div>
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Evento no encontrado</div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <Layout>
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="mb-6">
         <button
           onClick={() => navigate('/eventos')}
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+          className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mb-4"
         >
           <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          Volver a eventos
+          Volver
         </button>
         
         <div className="flex items-start justify-between">
@@ -205,9 +211,10 @@ const EventoDetalle = () => {
       </div>
 
       {/* Contenido principal */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-1">
         {/* Lista de asistentes (2/3) */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-fit max-h-[calc(100vh-200px)] flex flex-col">
           <AsistentesChecklist
             eventoId={id}
             asistentes={asistentes}
@@ -218,7 +225,7 @@ const EventoDetalle = () => {
         </div>
 
         {/* Resumen (1/3) */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 h-fit max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
           <ResumenEvento
             evento={evento}
             resumen={resumen}
@@ -227,6 +234,7 @@ const EventoDetalle = () => {
             canEdit={canEdit}
             loading={loading}
           />
+        </div>
         </div>
       </div>
 
@@ -241,6 +249,7 @@ const EventoDetalle = () => {
         loading={modalConfirmar.loading}
       />
     </div>
+    </Layout>
   );
 };
 

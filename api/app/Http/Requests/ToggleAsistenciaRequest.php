@@ -61,13 +61,15 @@ class ToggleAsistenciaRequest extends FormRequest
             $socioId = $this->input('socio_id');
             
             if ($evento && $socioId) {
-                // Verificar que el socio esté registrado en el evento
-                $asistente = \App\Models\AsistenteEvento::where('evento_id', $evento->id)
-                    ->where('socio_id', $socioId)
-                    ->first();
-                    
-                if (!$asistente) {
-                    $validator->errors()->add('socio_id', 'El socio no está registrado en este evento.');
+                // Verificar que el socio existe y está activo
+                $socio = \App\Models\Socio::find($socioId);
+                if (!$socio || $socio->estado !== 'ACTIVO') {
+                    $validator->errors()->add('socio_id', 'El socio no existe o no está activo.');
+                }
+                
+                // Verificar que el evento no esté contabilizado (solo para edición)
+                if ($evento->contabilizado) {
+                    $validator->errors()->add('evento', 'No se puede modificar la asistencia de un evento ya contabilizado.');
                 }
             }
         });

@@ -84,13 +84,16 @@ const Eventos = () => {
 
       const response = await eventosService.list(params);
       
-      if (response.success) {
-        setEventos(response.data.data);
+      if (response.success && response.data) {
+        // La respuesta tiene esta estructura: { success: true, data: { data: [...], meta: {...} } }
+        const eventosData = response.data;
+        
+        setEventos(eventosData.data || []);
         setPagination({
-          current_page: response.data.meta.current_page,
-          last_page: response.data.meta.last_page,
-          per_page: response.data.meta.per_page,
-          total: response.data.meta.total,
+          current_page: eventosData.meta?.current_page || 1,
+          last_page: eventosData.meta?.last_page || 1,
+          per_page: eventosData.meta?.per_page || 15,
+          total: eventosData.meta?.total || 0,
         });
       } else {
         throw new Error(response.message || 'Error al cargar eventos');

@@ -335,17 +335,28 @@ class EventoService
     /**
      * Toggle asistencia de un socio
      */
-    public function toggleAsistencia(Evento $evento, int $socioId): array
+    public function toggleAsistencia(Evento $evento, int $socioId, ?bool $asistio = null): array
     {
         $asistente = AsistenteEvento::where('evento_id', $evento->id)
             ->where('socio_id', $socioId)
             ->first();
 
         if (!$asistente) {
-            throw new \Exception('El socio no está registrado en este evento');
+            // Si el socio no está registrado como asistente, lo agregamos automáticamente
+            $nuevoEstado = $asistio !== null ? $asistio : true; // Usar el valor proporcionado o true por defecto
+            $asistente = AsistenteEvento::create([
+                'evento_id' => $evento->id,
+                'socio_id' => $socioId,
+                'asistio' => $nuevoEstado,
+            ]);
+        } else {
+            // Si ya existe, usar el valor proporcionado o hacer toggle
+            if ($asistio !== null) {
+                $asistente->update(['asistio' => $asistio]);
+            } else {
+                $asistente->toggleAsistencia();
+            }
         }
-
-        $asistente->toggleAsistencia();
 
         return [
             'socio_id' => $socioId,
