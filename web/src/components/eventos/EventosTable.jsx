@@ -142,13 +142,15 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div className="flex space-x-2">
-                  <button
-                    onClick={() => onView(evento.id)}
-                    className="text-blue-600 hover:text-blue-900"
-                    title="Ver detalle"
-                  >
-                    <EyeIcon className="h-5 w-5" />
-                  </button>
+                  {evento.clase === 'GASTO' && (
+                    <button
+                      onClick={() => onView(evento.id)}
+                      className="text-blue-600 hover:text-blue-900"
+                      title="Ver detalle"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                    </button>
+                  )}
                   
                   {canEdit && !evento.contabilizado && (
                     <>

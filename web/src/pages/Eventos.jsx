@@ -23,7 +23,7 @@ const Eventos = () => {
   const [pagination, setPagination] = useState({
     current_page: 1,
     last_page: 1,
-    per_page: 15,
+    per_page: 6,
     total: 0,
   });
   
@@ -31,10 +31,11 @@ const Eventos = () => {
     q: '',
     desde: '',
     hasta: '',
-    clase: '',
     tipo: '',
     contabilizado: '',
   });
+
+  const [toggleClase, setToggleClase] = useState('INGRESO'); // 'INGRESO', 'GASTO'
   
   const [modalConfirmar, setModalConfirmar] = useState({
     isOpen: false,
@@ -69,7 +70,17 @@ const Eventos = () => {
 
   useEffect(() => {
     fetchEventos();
-  }, [pagination.current_page]);
+  }, [pagination.current_page, toggleClase]);
+
+  // Filtrar automáticamente cuando cambien los filtros
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setPagination(prev => ({ ...prev, current_page: 1 }));
+      fetchEventos();
+    }, 300); // Debounce de 300ms
+
+    return () => clearTimeout(timeoutId);
+  }, [filtros.q, filtros.desde, filtros.hasta, filtros.tipo, filtros.contabilizado]);
 
   const fetchEventos = async () => {
     setLoading(true);
@@ -77,6 +88,7 @@ const Eventos = () => {
       const params = {
         page: pagination.current_page,
         per_page: pagination.per_page,
+        clase: toggleClase,
         ...filtros,
       };
       
@@ -115,10 +127,12 @@ const Eventos = () => {
     setFiltros(prev => ({ ...prev, [campo]: valor }));
   };
 
-  const handleBuscar = () => {
+  const handleToggleClase = (clase) => {
+    setToggleClase(clase);
+    // Resetear la página cuando cambie de "página interna"
     setPagination(prev => ({ ...prev, current_page: 1 }));
-    fetchEventos();
   };
+
 
   const handlePageChange = (page) => {
     setPagination(prev => ({ ...prev, current_page: page }));
@@ -420,8 +434,35 @@ const Eventos = () => {
       <EventosFiltros
         filtros={filtros}
         onFiltroChange={handleFiltroChange}
-        onBuscar={handleBuscar}
       />
+
+      {/* Toggle de Clase - Pestañas */}
+      <div className="mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="flex">
+            <button
+              onClick={() => handleToggleClase('INGRESO')}
+              className={`flex-1 px-6 py-2 text-sm font-medium rounded-l-lg transition-colors ${
+                toggleClase === 'INGRESO'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              Ingresos
+            </button>
+            <button
+              onClick={() => handleToggleClase('GASTO')}
+              className={`flex-1 px-6 py-2 text-sm font-medium rounded-r-lg transition-colors ${
+                toggleClase === 'GASTO'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              Gastos
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Tabla */}
       <div className="flex-1 min-h-0 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col">
