@@ -37,10 +37,102 @@ class EventoService
     }
 
     /**
-     * Contabilizar un evento (transaccional)
+     * Crear y contabilizar un evento de INGRESO (transaccional)
      */
-    public function contabilizar(Evento $evento): array
+    public function storeIngreso(array $data): array
     {
+        DB::beginTransaction();
+        
+        try {
+            // Crear el evento (sin contabilizar aún)
+            $evento = Evento::create([
+                'nombre' => $data['nombre'],
+                'motivo' => $data['motivo'],
+                'fecha_evento' => $data['fecha_evento'],
+                'clase' => 'INGRESO',
+                'monto_ingreso' => $data['monto_ingreso'],
+                'contabilizado' => false, // Se contabilizará en el siguiente paso
+                'creado_por' => auth()->id(),
+            ]);
+
+            // Contabilizar inmediatamente
+            $resultadoContable = $this->contabilizarIngreso($evento);
+
+            DB::commit();
+
+            return [
+                'evento' => $evento,
+                'contabilizacion' => $resultadoContable
+            ];
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al crear evento de ingreso', [
+                'data' => $data,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Contabilizar un evento de INGRESO (transaccional)
+     */
+    public function contabilizarIngreso(Evento $evento): array
+    {
+        if ($evento->clase !== 'INGRESO') {
+            throw new \Exception('Este método solo es para eventos de INGRESO');
+        }
+
+        if ($evento->contabilizado) {
+            throw new \Exception('El evento de ingreso ya ha sido contabilizado');
+        }
+
+        $cuentaEventos = $this->obtenerCuentaEventosAsotema();
+        
+        $resultado = [
+            'movimientos_creados' => [],
+            'total_ingreso' => $evento->monto_ingreso
+        ];
+
+        // Crear movimiento DEBE en "Eventos ASOTEMA (Operativo)"
+        $movimientoIngreso = Movimiento::create([
+            'cuenta_id' => $cuentaEventos->id,
+            'tipo' => 'DEBE',
+            'monto' => $evento->monto_ingreso,
+            'descripcion' => "Ingreso por evento: {$evento->nombre}",
+            'ref_tipo' => 'EVENTO_INGRESO',
+            'ref_id' => $evento->id,
+            'creado_por' => auth()->id() ?? $evento->creado_por,
+        ]);
+
+        $resultado['movimientos_creados'][] = [
+            'tipo' => 'INGRESO',
+            'cuenta' => 'Eventos ASOTEMA (Operativo)',
+            'monto' => $evento->monto_ingreso,
+            'movimiento_id' => $movimientoIngreso->id
+        ];
+
+        // Marcar evento como contabilizado
+        $evento->update(['contabilizado' => true]);
+
+        Log::info('Evento de ingreso contabilizado exitosamente', [
+            'evento_id' => $evento->id,
+            'resultado' => $resultado
+        ]);
+
+        return $resultado;
+    }
+
+    /**
+     * Contabilizar un evento de GASTO (transaccional)
+     */
+    public function contabilizarGasto(Evento $evento): array
+    {
+        if ($evento->clase !== 'GASTO') {
+            throw new \Exception('Este método solo es para eventos de GASTO');
+        }
+
         if ($evento->contabilizado) {
             throw new \Exception('El evento ya ha sido contabilizado');
         }
@@ -172,7 +264,10 @@ class EventoService
             throw new \Exception('El evento no ha sido contabilizado');
         }
 
-        $movimientosOriginales = Movimiento::where('ref_tipo', 'EVENTO')
+        // Determinar el tipo de referencia según la clase del evento
+        $refTipo = $evento->clase === 'INGRESO' ? 'EVENTO_INGRESO' : 'EVENTO';
+        
+        $movimientosOriginales = Movimiento::where('ref_tipo', $refTipo)
             ->where('ref_id', $evento->id)
             ->get();
 
@@ -240,44 +335,79 @@ class EventoService
      */
     public function obtenerResumenContable(Evento $evento): array
     {
-        $asistentesConfirmados = $evento->asistentesConfirmados()->count();
-        
         $resumen = [
             'evento' => [
                 'id' => $evento->id,
                 'nombre' => $evento->nombre,
-                'tipo_evento' => $evento->tipo_evento,
+                'clase' => $evento->clase,
                 'contabilizado' => $evento->contabilizado,
                 'fecha_evento' => $evento->fecha_evento,
             ],
-            'asistentes' => [
+            'financiero' => []
+        ];
+
+        if ($evento->clase === 'INGRESO') {
+            $resumen['evento']['monto_ingreso'] = $evento->monto_ingreso;
+            $resumen['financiero'] = [
+                'total_ingreso' => $evento->monto_ingreso,
+                'total_costos' => 0,
+                'neto' => $evento->monto_ingreso,
+            ];
+        } else {
+            $asistentesConfirmados = $evento->asistentesConfirmados()->count();
+            $resumen['evento']['tipo_evento'] = $evento->tipo_evento;
+            $resumen['asistentes'] = [
                 'total' => $evento->asistentes()->count(),
                 'confirmados' => $asistentesConfirmados,
                 'precio_por_asistente' => $evento->precio_por_asistente,
                 'costo_por_asistente' => $evento->costo_por_asistente,
-            ],
-            'financiero' => [
+            ];
+            $resumen['financiero'] = [
                 'total_ingresos_potenciales' => $asistentesConfirmados * $evento->precio_por_asistente,
                 'total_costos_potenciales' => $asistentesConfirmados * $evento->costo_por_asistente,
                 'neto_potencial' => ($asistentesConfirmados * $evento->precio_por_asistente) - ($asistentesConfirmados * $evento->costo_por_asistente),
-            ]
-        ];
+            ];
+        }
 
         // Si está contabilizado, obtener datos reales
         if ($evento->contabilizado) {
-            $movimientos = Movimiento::where('ref_tipo', 'EVENTO')
+            $refTipo = $evento->clase === 'INGRESO' ? 'EVENTO_INGRESO' : 'EVENTO';
+            $movimientos = Movimiento::where('ref_tipo', $refTipo)
                 ->where('ref_id', $evento->id)
                 ->get();
 
             $ingresosReales = $movimientos->where('tipo', 'DEBE')->sum('monto');
             $costosReales = $movimientos->where('tipo', 'HABER')->sum('monto');
 
-            $resumen['financiero']['total_ingresos_reales'] = $ingresosReales;
-            $resumen['financiero']['total_costos_reales'] = $costosReales;
-            $resumen['financiero']['neto_real'] = $ingresosReales - $costosReales;
+            if ($evento->clase === 'INGRESO') {
+                $resumen['financiero']['total_ingreso_real'] = $ingresosReales;
+                $resumen['financiero']['neto_real'] = $ingresosReales;
+            } else {
+                $resumen['financiero']['total_ingresos_reales'] = $ingresosReales;
+                $resumen['financiero']['total_costos_reales'] = $costosReales;
+                $resumen['financiero']['neto_real'] = $ingresosReales - $costosReales;
+            }
         }
 
         return $resumen;
+    }
+
+    /**
+     * Crear un evento de GASTO (sin contabilizar)
+     */
+    public function storeGasto(array $data): Evento
+    {
+        return Evento::create([
+            'nombre' => $data['nombre'],
+            'motivo' => $data['motivo'],
+            'fecha_evento' => $data['fecha_evento'],
+            'clase' => 'GASTO',
+            'tipo_evento' => $data['tipo_evento'],
+            'precio_por_asistente' => $data['precio_por_asistente'],
+            'costo_por_asistente' => $data['costo_por_asistente'],
+            'contabilizado' => false, // No se contabiliza hasta llamar /contabilizar
+            'creado_por' => auth()->id(),
+        ]);
     }
 
     /**

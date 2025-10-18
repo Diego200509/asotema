@@ -10,7 +10,7 @@ const EventosFiltros = ({ filtros, onFiltroChange, onBuscar }) => {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <div>
           <Input
             label="Búsqueda"
@@ -36,6 +36,18 @@ const EventosFiltros = ({ filtros, onFiltroChange, onBuscar }) => {
             value={filtros.hasta}
             onChange={(e) => onFiltroChange('hasta', e.target.value)}
           />
+        </div>
+        
+        <div>
+          <Select
+            label="Clase"
+            value={filtros.clase}
+            onChange={(e) => onFiltroChange('clase', e.target.value)}
+          >
+            <option value="">Todas</option>
+            <option value="INGRESO">Ingreso</option>
+            <option value="GASTO">Gasto</option>
+          </Select>
         </div>
         
         <div>

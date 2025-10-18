@@ -16,6 +16,10 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
     });
   };
 
+  const getClaseBadgeVariant = (clase) => {
+    return clase === 'INGRESO' ? 'success' : 'info';
+  };
+
   const getTipoBadgeVariant = (tipo) => {
     return tipo === 'COMPARTIDO' ? 'info' : 'warning';
   };
@@ -25,6 +29,9 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
   };
 
   const calcularNetoEstimado = (evento) => {
+    if (evento.clase === 'INGRESO') {
+      return parseFloat(evento.monto_ingreso) || 0;
+    }
     const asistentes = evento.total_asistentes_confirmados || 0;
     const precio = parseFloat(evento.precio_por_asistente) || 0;
     const costo = parseFloat(evento.costo_por_asistente) || 0;
@@ -46,13 +53,16 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
               Fecha
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Clase
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Tipo
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Precio/Asistente
+              Monto/Precio
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Costo/Asistente
+              Costo
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Asistentes
@@ -83,19 +93,41 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                 <div className="text-sm text-gray-500">{formatDate(evento.fecha_evento)}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <Badge variant={getTipoBadgeVariant(evento.tipo_evento)}>
-                  {evento.tipo_evento}
+                <Badge variant={getClaseBadgeVariant(evento.clase)}>
+                  {evento.clase}
                 </Badge>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{formatCurrency(evento.precio_por_asistente)}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{formatCurrency(evento.costo_por_asistente)}</div>
+                {evento.clase === 'GASTO' && evento.tipo_evento ? (
+                  <Badge variant={getTipoBadgeVariant(evento.tipo_evento)}>
+                    {evento.tipo_evento}
+                  </Badge>
+                ) : (
+                  <span className="text-sm text-gray-400">-</span>
+                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-900">
-                  {evento.total_asistentes_confirmados || 0} / {evento.total_asistentes || 0}
+                  {evento.clase === 'INGRESO' 
+                    ? formatCurrency(evento.monto_ingreso)
+                    : formatCurrency(evento.precio_por_asistente)
+                  }
+                </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="text-sm text-gray-900">
+                  {evento.clase === 'INGRESO' 
+                    ? <span className="text-gray-400">-</span>
+                    : formatCurrency(evento.costo_por_asistente)
+                  }
+                </div>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="text-sm text-gray-900">
+                  {evento.clase === 'INGRESO' 
+                    ? <span className="text-gray-400">-</span>
+                    : `${evento.total_asistentes_confirmados || 0} / ${evento.total_asistentes || 0}`
+                  }
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
@@ -136,13 +168,15 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                         <TrashIcon className="h-5 w-5" />
                       </button>
                       
-                      <button
-                        onClick={() => onContabilizar(evento.id)}
-                        className="text-green-600 hover:text-green-900"
-                        title="Contabilizar"
-                      >
-                        <CheckCircleIcon className="h-5 w-5" />
-                      </button>
+                      {evento.clase === 'GASTO' && (
+                        <button
+                          onClick={() => onContabilizar(evento.id)}
+                          className="text-green-600 hover:text-green-900"
+                          title="Contabilizar"
+                        >
+                          <CheckCircleIcon className="h-5 w-5" />
+                        </button>
+                      )}
                     </>
                   )}
                   

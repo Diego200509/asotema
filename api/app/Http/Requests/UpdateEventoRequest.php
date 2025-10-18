@@ -32,7 +32,7 @@ class UpdateEventoRequest extends FormRequest
             ];
         }
 
-        return [
+        $rules = [
             'nombre' => ['sometimes', 'string', 'max:255'],
             'motivo' => ['sometimes', 'string', 'max:1000'],
             'fecha_evento' => [
@@ -45,10 +45,18 @@ class UpdateEventoRequest extends FormRequest
                     }
                 }
             ],
-            'tipo_evento' => ['sometimes', 'in:COMPARTIDO,CUBRE_ASOTEMA'],
-            'precio_por_asistente' => ['sometimes', 'numeric', 'min:0', 'max:999999.99'],
-            'costo_por_asistente' => ['sometimes', 'numeric', 'min:0', 'max:999999.99'],
         ];
+
+        // Validaciones específicas por clase
+        if ($evento && $evento->clase === 'INGRESO') {
+            $rules['monto_ingreso'] = ['sometimes', 'numeric', 'min:0.01', 'max:999999.99'];
+        } else {
+            $rules['tipo_evento'] = ['sometimes', 'in:COMPARTIDO,CUBRE_ASOTEMA'];
+            $rules['precio_por_asistente'] = ['sometimes', 'numeric', 'min:0', 'max:999999.99'];
+            $rules['costo_por_asistente'] = ['sometimes', 'numeric', 'min:0', 'max:999999.99'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -67,6 +75,10 @@ class UpdateEventoRequest extends FormRequest
             
             'fecha_evento.date' => 'La fecha debe ser una fecha válida.',
             'fecha_evento.after' => 'La fecha del evento debe ser futura.',
+            
+            'monto_ingreso.numeric' => 'El monto debe ser un número válido.',
+            'monto_ingreso.min' => 'El monto debe ser mayor a 0.',
+            'monto_ingreso.max' => 'El monto no puede exceder $999,999.99.',
             
             'tipo_evento.in' => 'El tipo de evento debe ser COMPARTIDO o CUBRE_ASOTEMA.',
             

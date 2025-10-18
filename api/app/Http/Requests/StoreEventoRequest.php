@@ -22,7 +22,7 @@ class StoreEventoRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'nombre' => ['required', 'string', 'max:255'],
             'motivo' => ['required', 'string', 'max:1000'],
             'fecha_evento' => [
@@ -36,10 +36,19 @@ class StoreEventoRequest extends FormRequest
                     }
                 }
             ],
-            'tipo_evento' => ['required', 'in:COMPARTIDO,CUBRE_ASOTEMA'],
-            'precio_por_asistente' => ['required', 'numeric', 'min:0', 'max:999999.99'],
-            'costo_por_asistente' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+            'clase' => ['required', 'in:INGRESO,GASTO'],
         ];
+
+        // Validaciones específicas por clase
+        if ($this->input('clase') === 'INGRESO') {
+            $rules['monto_ingreso'] = ['required', 'numeric', 'min:0.01', 'max:999999.99'];
+        } else {
+            $rules['tipo_evento'] = ['required', 'in:COMPARTIDO,CUBRE_ASOTEMA'];
+            $rules['precio_por_asistente'] = ['required', 'numeric', 'min:0', 'max:999999.99'];
+            $rules['costo_por_asistente'] = ['required', 'numeric', 'min:0', 'max:999999.99'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -62,15 +71,23 @@ class StoreEventoRequest extends FormRequest
             'fecha_evento.date' => 'La fecha debe ser una fecha válida.',
             'fecha_evento.after' => 'La fecha del evento debe ser futura.',
             
-            'tipo_evento.required' => 'El tipo de evento es obligatorio.',
+            'clase.required' => 'La clase del evento es obligatoria.',
+            'clase.in' => 'La clase debe ser INGRESO o GASTO.',
+            
+            'monto_ingreso.required' => 'El monto de ingreso es obligatorio para eventos de INGRESO.',
+            'monto_ingreso.numeric' => 'El monto debe ser un número válido.',
+            'monto_ingreso.min' => 'El monto debe ser mayor a 0.',
+            'monto_ingreso.max' => 'El monto no puede exceder $999,999.99.',
+            
+            'tipo_evento.required' => 'El tipo de evento es obligatorio para eventos de GASTO.',
             'tipo_evento.in' => 'El tipo de evento debe ser COMPARTIDO o CUBRE_ASOTEMA.',
             
-            'precio_por_asistente.required' => 'El precio por asistente es obligatorio.',
+            'precio_por_asistente.required' => 'El precio por asistente es obligatorio para eventos de GASTO.',
             'precio_por_asistente.numeric' => 'El precio debe ser un número válido.',
             'precio_por_asistente.min' => 'El precio no puede ser negativo.',
             'precio_por_asistente.max' => 'El precio no puede exceder $999,999.99.',
             
-            'costo_por_asistente.required' => 'El costo por asistente es obligatorio.',
+            'costo_por_asistente.required' => 'El costo por asistente es obligatorio para eventos de GASTO.',
             'costo_por_asistente.numeric' => 'El costo debe ser un número válido.',
             'costo_por_asistente.min' => 'El costo no puede ser negativo.',
             'costo_por_asistente.max' => 'El costo no puede exceder $999,999.99.',

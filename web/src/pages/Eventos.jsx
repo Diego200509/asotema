@@ -31,6 +31,7 @@ const Eventos = () => {
     q: '',
     desde: '',
     hasta: '',
+    clase: '',
     tipo: '',
     contabilizado: '',
   });
@@ -55,6 +56,8 @@ const Eventos = () => {
     nombre: '',
     motivo: '',
     fecha_evento: '',
+    clase: '',
+    monto_ingreso: '',
     tipo_evento: '',
     precio_por_asistente: '',
     costo_por_asistente: '',
@@ -142,6 +145,8 @@ const Eventos = () => {
         nombre: evento.nombre || '',
         motivo: evento.motivo || '',
         fecha_evento: fechaFormateada,
+        clase: evento.clase || '',
+        monto_ingreso: evento.monto_ingreso || '',
         tipo_evento: evento.tipo_evento || '',
         precio_por_asistente: evento.precio_por_asistente || '',
         costo_por_asistente: evento.costo_por_asistente || '',
@@ -170,6 +175,8 @@ const Eventos = () => {
       nombre: '',
       motivo: '',
       fecha_evento: fechaFormateada,
+      clase: '',
+      monto_ingreso: '',
       tipo_evento: '',
       precio_por_asistente: '',
       costo_por_asistente: '',
@@ -293,16 +300,27 @@ const Eventos = () => {
       }
     }
 
-    if (!formData.tipo_evento) {
-      newErrors.tipo_evento = 'El tipo de evento es obligatorio';
+    if (!formData.clase) {
+      newErrors.clase = 'La clase del evento es obligatoria';
     }
 
-    if (!formData.precio_por_asistente || parseFloat(formData.precio_por_asistente) < 0) {
-      newErrors.precio_por_asistente = 'El precio debe ser mayor o igual a 0';
-    }
+    // Validaciones específicas por clase
+    if (formData.clase === 'INGRESO') {
+      if (!formData.monto_ingreso || parseFloat(formData.monto_ingreso) <= 0) {
+        newErrors.monto_ingreso = 'El monto de ingreso debe ser mayor a 0';
+      }
+    } else if (formData.clase === 'GASTO') {
+      if (!formData.tipo_evento) {
+        newErrors.tipo_evento = 'El tipo de evento es obligatorio';
+      }
 
-    if (!formData.costo_por_asistente || parseFloat(formData.costo_por_asistente) < 0) {
-      newErrors.costo_por_asistente = 'El costo debe ser mayor o igual a 0';
+      if (!formData.precio_por_asistente || parseFloat(formData.precio_por_asistente) < 0) {
+        newErrors.precio_por_asistente = 'El precio debe ser mayor o igual a 0';
+      }
+
+      if (!formData.costo_por_asistente || parseFloat(formData.costo_por_asistente) < 0) {
+        newErrors.costo_por_asistente = 'El costo debe ser mayor o igual a 0';
+      }
     }
 
     setFormErrors(newErrors);
@@ -325,17 +343,28 @@ const Eventos = () => {
         nombre: formData.nombre.trim(),
         motivo: formData.motivo.trim(),
         fecha_evento: formData.fecha_evento + ':00-05:00', // Agregar segundos y timezone de Ecuador
-        tipo_evento: formData.tipo_evento,
-        precio_por_asistente: parseFloat(formData.precio_por_asistente),
-        costo_por_asistente: parseFloat(formData.costo_por_asistente),
+        clase: formData.clase,
       };
+
+      // Agregar campos específicos según la clase
+      if (formData.clase === 'INGRESO') {
+        dataToSend.monto_ingreso = parseFloat(formData.monto_ingreso);
+      } else if (formData.clase === 'GASTO') {
+        dataToSend.tipo_evento = formData.tipo_evento;
+        dataToSend.precio_por_asistente = parseFloat(formData.precio_por_asistente);
+        dataToSend.costo_por_asistente = parseFloat(formData.costo_por_asistente);
+      }
 
       if (modalFormulario.isEdit) {
         await eventosService.update(modalFormulario.eventoId, dataToSend);
         showSuccess('Evento actualizado exitosamente');
       } else {
-        await eventosService.create(dataToSend);
-        showSuccess('Evento creado exitosamente');
+        const response = await eventosService.create(dataToSend);
+        if (formData.clase === 'INGRESO') {
+          showSuccess('Evento de ingreso creado y contabilizado exitosamente');
+        } else {
+          showSuccess('Evento de gasto creado exitosamente');
+        }
       }
 
       // Cerrar modal y recargar datos

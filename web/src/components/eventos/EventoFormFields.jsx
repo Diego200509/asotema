@@ -51,20 +51,61 @@ const EventoFormFields = ({ formData, onChange, errors, isEdit }) => {
         />
 
         <Select
-          label="Tipo de Evento"
-          name="tipo_evento"
-          value={formData.tipo_evento}
-          onChange={(e) => handleChange('tipo_evento', e.target.value)}
-          error={errors.tipo_evento}
+          label="Clase de Evento"
+          name="clase"
+          value={formData.clase}
+          onChange={(e) => handleChange('clase', e.target.value)}
+          error={errors.clase}
           required
-          placeholder="Seleccionar tipo de evento"
+          placeholder="Seleccionar clase de evento"
           options={[
-            { value: 'COMPARTIDO', label: 'Compartido (Socio paga costo)' },
-            { value: 'CUBRE_ASOTEMA', label: 'Cubre ASOTEMA (ASOTEMA paga costo)' }
+            { value: 'INGRESO', label: 'Ingreso (Dinero que ingresa a ASOTEMA)' },
+            { value: 'GASTO', label: 'Gasto (Evento con asistentes y costos)' }
           ]}
         />
 
-        {formData.tipo_evento && (
+        {formData.clase === 'INGRESO' && (
+          <Input
+            type="number"
+            label="Monto de Ingreso"
+            name="monto_ingreso"
+            value={formData.monto_ingreso}
+            onChange={(e) => handleChange('monto_ingreso', e.target.value)}
+            error={errors.monto_ingreso}
+            required
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+          />
+        )}
+
+        {formData.clase === 'GASTO' && (
+          <>
+            <Select
+              label="Tipo de Evento"
+              name="tipo_evento"
+              value={formData.tipo_evento}
+              onChange={(e) => handleChange('tipo_evento', e.target.value)}
+              error={errors.tipo_evento}
+              required
+              placeholder="Seleccionar tipo de evento"
+              options={[
+                { value: 'COMPARTIDO', label: 'Compartido (Socio paga costo)' },
+                { value: 'CUBRE_ASOTEMA', label: 'Cubre ASOTEMA (ASOTEMA paga costo)' }
+              ]}
+            />
+          </>
+        )}
+
+        {formData.clase === 'INGRESO' && (
+          <div className="bg-green-50 border border-green-200 rounded-md p-4">
+            <p className="text-sm text-green-800">
+              <strong>Evento de Ingreso:</strong> Este evento registrará un ingreso directo a ASOTEMA. Se contabilizará automáticamente al crear el evento.
+            </p>
+          </div>
+        )}
+
+        {formData.clase === 'GASTO' && formData.tipo_evento && (
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
             <p className="text-sm text-blue-800">
               {formData.tipo_evento === 'COMPARTIDO' ? (
@@ -80,35 +121,37 @@ const EventoFormFields = ({ formData, onChange, errors, isEdit }) => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input
-            type="number"
-            label="Precio por Asistente"
-            name="precio_por_asistente"
-            value={formData.precio_por_asistente}
-            onChange={(e) => handleChange('precio_por_asistente', e.target.value)}
-            error={errors.precio_por_asistente}
-            required
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-          />
+        {formData.clase === 'GASTO' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              type="number"
+              label="Precio por Asistente"
+              name="precio_por_asistente"
+              value={formData.precio_por_asistente}
+              onChange={(e) => handleChange('precio_por_asistente', e.target.value)}
+              error={errors.precio_por_asistente}
+              required
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
 
-          <Input
-            type="number"
-            label="Costo por Asistente"
-            name="costo_por_asistente"
-            value={formData.costo_por_asistente}
-            onChange={(e) => handleChange('costo_por_asistente', e.target.value)}
-            error={errors.costo_por_asistente}
-            required
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-          />
-        </div>
+            <Input
+              type="number"
+              label="Costo por Asistente"
+              name="costo_por_asistente"
+              value={formData.costo_por_asistente}
+              onChange={(e) => handleChange('costo_por_asistente', e.target.value)}
+              error={errors.costo_por_asistente}
+              required
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+        )}
 
-        {formData.precio_por_asistente && formData.costo_por_asistente && (
+        {formData.clase === 'GASTO' && formData.precio_por_asistente && formData.costo_por_asistente && (
           <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-700">Neto por Asistente:</span>

@@ -43,6 +43,10 @@ class EventoController extends Controller
                 $query->search($request->q);
             }
 
+            if ($request->filled('clase')) {
+                $query->where('clase', $request->clase);
+            }
+
             if ($request->filled('tipo')) {
                 $query->where('tipo_evento', $request->tipo);
             }
@@ -87,23 +91,33 @@ class EventoController extends Controller
     public function store(StoreEventoRequest $request)
     {
         try {
-            $evento = Evento::create([
-                'nombre' => $request->nombre,
-                'motivo' => $request->motivo,
-                'fecha_evento' => $request->fecha_evento,
-                'tipo_evento' => $request->tipo_evento,
-                'precio_por_asistente' => $request->precio_por_asistente,
-                'costo_por_asistente' => $request->costo_por_asistente,
-                'creado_por' => auth()->id(),
-            ]);
+            if ($request->clase === 'INGRESO') {
+                // Crear evento de INGRESO (se contabiliza inmediatamente)
+                $resultado = $this->eventoService->storeIngreso($request->validated());
+                $evento = $resultado['evento'];
+                $contabilizacion = $resultado['contabilizacion'];
+                
+                $evento->load(['creadoPor']);
 
-            $evento->load(['creadoPor']);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Evento de ingreso creado y contabilizado exitosamente',
+                    'data' => [
+                        'evento' => $evento,
+                        'contabilizacion' => $contabilizacion,
+                    ],
+                ], 201);
+            } else {
+                // Crear evento de GASTO (sin contabilizar)
+                $evento = $this->eventoService->storeGasto($request->validated());
+                $evento->load(['creadoPor']);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Evento creado exitosamente',
-                'data' => $evento,
-            ], 201);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Evento de gasto creado exitosamente',
+                    'data' => $evento,
+                ], 201);
+            }
 
         } catch (\Exception $e) {
             Log::error('Error al crear evento', ['error' => $e->getMessage()]);
@@ -218,6 +232,14 @@ class EventoController extends Controller
     public function agregarAsistentes(AgregarAsistentesRequest $request, Evento $evento)
     {
         try {
+            // Solo eventos de GASTO pueden tener asistentes
+            if ($evento->clase !== 'GASTO') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Solo los eventos de GASTO pueden tener asistentes',
+                ], 400);
+            }
+
             $resultado = $this->eventoService->agregarAsistentes($evento, $request->socio_ids);
 
             return response()->json([
@@ -242,6 +264,14 @@ class EventoController extends Controller
     public function toggleAsistencia(ToggleAsistenciaRequest $request, Evento $evento)
     {
         try {
+            // Solo eventos de GASTO pueden tener asistentes
+            if ($evento->clase !== 'GASTO') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Solo los eventos de GASTO pueden tener asistentes',
+                ], 400);
+            }
+
             $resultado = $this->eventoService->toggleAsistencia($evento, $request->socio_id, $request->asistio);
 
             return response()->json([
@@ -278,7 +308,15 @@ class EventoController extends Controller
                 ], 403);
             }
 
-            $resultado = $this->eventoService->contabilizar($evento);
+            // Solo eventos de GASTO se pueden contabilizar manualmente
+            if ($evento->clase !== 'GASTO') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Solo los eventos de GASTO se pueden contabilizar manualmente',
+                ], 400);
+            }
+
+            $resultado = $this->eventoService->contabilizarGasto($evento);
 
             return response()->json([
                 'success' => true,

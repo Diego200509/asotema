@@ -15,6 +15,8 @@ class Evento extends Model
         'nombre',
         'motivo',
         'fecha_evento',
+        'clase',
+        'monto_ingreso',
         'tipo_evento',
         'precio_por_asistente',
         'costo_por_asistente',
@@ -24,6 +26,7 @@ class Evento extends Model
 
     protected $casts = [
         'fecha_evento' => 'datetime',
+        'monto_ingreso' => 'decimal:2',
         'precio_por_asistente' => 'decimal:2',
         'costo_por_asistente' => 'decimal:2',
         'contabilizado' => 'boolean',
@@ -78,6 +81,14 @@ class Evento extends Model
     public function scopeNoContabilizados($query)
     {
         return $query->where('contabilizado', false);
+    }
+
+    /**
+     * Scope para filtrar por clase de evento
+     */
+    public function scopePorClase($query, $clase)
+    {
+        return $query->where('clase', $clase);
     }
 
     /**
@@ -138,6 +149,9 @@ class Evento extends Model
      */
     public function getTotalIngresosPotencialesAttribute()
     {
+        if ($this->clase === 'INGRESO') {
+            return $this->monto_ingreso ?? 0;
+        }
         return $this->total_asistentes_confirmados * $this->precio_por_asistente;
     }
 
@@ -146,6 +160,9 @@ class Evento extends Model
      */
     public function getTotalCostosPotencialesAttribute()
     {
+        if ($this->clase === 'INGRESO') {
+            return 0; // Los ingresos no tienen costos asociados
+        }
         return $this->total_asistentes_confirmados * $this->costo_por_asistente;
     }
 
@@ -155,6 +172,22 @@ class Evento extends Model
     public function getNetoPotencialAttribute()
     {
         return $this->total_ingresos_potenciales - $this->total_costos_potenciales;
+    }
+
+    /**
+     * Verificar si es un evento de ingreso
+     */
+    public function esIngreso()
+    {
+        return $this->clase === 'INGRESO';
+    }
+
+    /**
+     * Verificar si es un evento de gasto
+     */
+    public function esGasto()
+    {
+        return $this->clase === 'GASTO';
     }
 
     /**
