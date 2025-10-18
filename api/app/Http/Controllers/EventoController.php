@@ -179,6 +179,20 @@ class EventoController extends Controller
             $evento->update($request->validated());
             $evento->load(['creadoPor']);
 
+            // Si es un evento INGRESO y no está contabilizado, contabilizarlo automáticamente
+            if ($evento->clase === 'INGRESO' && !$evento->contabilizado) {
+                $contabilizacion = $this->eventoService->contabilizarIngreso($evento);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Evento de ingreso actualizado y contabilizado exitosamente',
+                    'data' => [
+                        'evento' => $evento,
+                        'contabilizacion' => $contabilizacion,
+                    ],
+                ], 200);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Evento actualizado exitosamente',
