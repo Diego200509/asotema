@@ -201,18 +201,6 @@ const EventoFormFields = ({ formData, onChange, errors, isEdit }) => {
                   ${parseFloat(formData.aporte_asotema).toFixed(2)}
                 </span>
               </div>
-              <div className="border-t pt-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-700">Neto para ASOTEMA:</span>
-                  <span className={`text-lg font-bold ${
-                    parseFloat(formData.aporte_socio) >= 0
-                      ? 'text-green-600'
-                      : 'text-red-600'
-                  }`}>
-                    ${parseFloat(formData.aporte_socio).toFixed(2)}
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
         )}

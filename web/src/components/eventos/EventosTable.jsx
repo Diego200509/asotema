@@ -2,7 +2,7 @@ import { EyeIcon, PencilIcon, TrashIcon, CheckCircleIcon, ArrowPathIcon } from '
 import Badge from '../shared/Badge';
 import { formatCurrency } from '../../utils/formatters';
 
-const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onReversar, canEdit }) => {
+const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onReversar, canEdit, toggleClase }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -25,16 +25,9 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
   };
 
   const getEstadoBadgeVariant = (contabilizado) => {
-    return contabilizado ? 'success' : 'secondary';
+    return contabilizado ? 'success' : 'warning';
   };
 
-  const calcularNetoEstimado = (evento) => {
-    if (evento.clase === 'INGRESO') {
-      return parseFloat(evento.monto_ingreso) || 0;
-    }
-    // Para eventos GASTO, no hay "neto estimado" con la nueva lógica
-    return 0;
-  };
 
   return (
     <div className="overflow-x-auto">
@@ -53,21 +46,24 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Clase
             </th>
+            {toggleClase === 'GASTO' && (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tipo
+              </th>
+            )}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Tipo
+              {toggleClase === 'INGRESO' ? 'Monto' : 'Valor/Costo'}
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Valor/Costo
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Aporte Socio
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Asistentes
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Neto Estimado
-            </th>
+            {toggleClase === 'GASTO' && (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Aporte Socio
+              </th>
+            )}
+            {toggleClase === 'GASTO' && (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Asistentes
+              </th>
+            )}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Estado
             </th>
@@ -95,15 +91,17 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                   {evento.clase}
                 </Badge>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {evento.clase === 'GASTO' && evento.tipo_evento ? (
-                  <Badge variant={getTipoBadgeVariant(evento.tipo_evento)}>
-                    {evento.tipo_evento}
-                  </Badge>
-                ) : (
-                  <span className="text-sm text-gray-400">-</span>
-                )}
-              </td>
+              {toggleClase === 'GASTO' && (
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {evento.tipo_evento ? (
+                    <Badge variant={getTipoBadgeVariant(evento.tipo_evento)}>
+                      {evento.tipo_evento}
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-gray-400">-</span>
+                  )}
+                </td>
+              )}
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-900">
                   {evento.clase === 'INGRESO' 
@@ -114,33 +112,23 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                   }
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {evento.clase === 'INGRESO' 
-                    ? <span className="text-gray-400">-</span>
-                    : evento.tipo_evento === 'COMPARTIDO' 
+              {toggleClase === 'GASTO' && (
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {evento.tipo_evento === 'COMPARTIDO' 
                       ? formatCurrency(evento.aporte_socio)
                       : <span className="text-gray-400">-</span>
-                  }
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">
-                  {evento.clase === 'INGRESO' 
-                    ? <span className="text-gray-400">-</span>
-                    : `${evento.total_asistentes_confirmados || 0} / ${evento.total_asistentes || 0}`
-                  }
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                {evento.clase === 'INGRESO' ? (
-                  <div className="text-sm font-semibold text-green-600">
-                    {formatCurrency(calcularNetoEstimado(evento))}
+                    }
                   </div>
-                ) : (
-                  <span className="text-sm text-gray-400">-</span>
-                )}
-              </td>
+                </td>
+              )}
+              {toggleClase === 'GASTO' && (
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {`${evento.total_asistentes_confirmados || 0} / ${evento.total_asistentes || 0}`}
+                  </div>
+                </td>
+              )}
               <td className="px-6 py-4 whitespace-nowrap">
                 <Badge variant={getEstadoBadgeVariant(evento.contabilizado)}>
                   {evento.contabilizado ? 'Contabilizado' : 'Pendiente'}
@@ -162,18 +150,22 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                     <>
                       <button
                         onClick={() => onEdit(evento.id)}
-                        className="text-yellow-600 hover:text-yellow-900"
+                        className="text-primary hover:text-primary-700 transition-colors duration-200 p-1 rounded hover:bg-primary-50"
                         title="Editar"
                       >
-                        <PencilIcon className="h-5 w-5" />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                       </button>
                       
                       <button
                         onClick={() => onDelete(evento.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-danger hover:text-danger-700 transition-colors duration-200 p-1 rounded hover:bg-danger-50"
                         title="Eliminar"
                       >
-                        <TrashIcon className="h-5 w-5" />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </button>
                       
                       {evento.clase === 'GASTO' && (

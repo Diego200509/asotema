@@ -512,6 +512,7 @@ const Eventos = () => {
                 onContabilizar={handleContabilizar}
                 onReversar={handleReversar}
                 canEdit={canEdit}
+                toggleClase={toggleClase}
               />
             </div>
             

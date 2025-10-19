@@ -172,21 +172,6 @@ const ResumenEvento = ({ evento, resumen, onContabilizar, onReversar, canEdit, l
           </div>
         )}
 
-        {evento?.tipo_evento === 'CUBRE_ASOTEMA' && (
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">
-                Neto para ASOTEMA
-              </span>
-              <span className="text-2xl font-bold text-gray-900">
-                $0.00
-              </span>
-            </div>
-            <div className="mt-1 text-xs text-gray-600">
-              ASOTEMA no gana nada, solo cubre costos
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Botones de acción */}
