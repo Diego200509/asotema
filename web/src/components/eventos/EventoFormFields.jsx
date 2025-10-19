@@ -90,10 +90,68 @@ const EventoFormFields = ({ formData, onChange, errors, isEdit }) => {
               required
               placeholder="Seleccionar tipo de evento"
               options={[
-                { value: 'COMPARTIDO', label: 'Compartido (Socio paga costo)' },
-                { value: 'CUBRE_ASOTEMA', label: 'Cubre ASOTEMA (ASOTEMA paga costo)' }
+                { value: 'COMPARTIDO', label: 'Compartido (Socio y ASOTEMA aportan)' },
+                { value: 'CUBRE_ASOTEMA', label: 'Cubre ASOTEMA (ASOTEMA cubre todo el costo)' }
               ]}
             />
+
+            {formData.tipo_evento === 'COMPARTIDO' && (
+              <>
+                <Input
+                  type="number"
+                  label="Aporte del Socio"
+                  name="aporte_socio"
+                  value={formData.aporte_socio}
+                  onChange={(e) => handleChange('aporte_socio', e.target.value)}
+                  error={errors.aporte_socio}
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+
+                <Input
+                  type="number"
+                  label="Aporte de ASOTEMA"
+                  name="aporte_asotema"
+                  value={formData.aporte_asotema}
+                  onChange={(e) => handleChange('aporte_asotema', e.target.value)}
+                  error={errors.aporte_asotema}
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+
+                {/* Valor del evento calculado automáticamente */}
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Valor del Evento (Calculado automáticamente)
+                  </label>
+                  <div className="text-lg font-bold text-gray-900">
+                    ${(parseFloat(formData.aporte_socio || 0) + parseFloat(formData.aporte_asotema || 0)).toFixed(2)}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Aporte del socio + Aporte de ASOTEMA
+                  </p>
+                </div>
+              </>
+            )}
+
+            {formData.tipo_evento === 'CUBRE_ASOTEMA' && (
+              <Input
+                type="number"
+                label="Costo por Socio"
+                name="costo_por_socio"
+                value={formData.costo_por_socio}
+                onChange={(e) => handleChange('costo_por_socio', e.target.value)}
+                error={errors.costo_por_socio}
+                required
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+              />
+            )}
           </>
         )}
 
@@ -110,59 +168,67 @@ const EventoFormFields = ({ formData, onChange, errors, isEdit }) => {
             <p className="text-sm text-blue-800">
               {formData.tipo_evento === 'COMPARTIDO' ? (
                 <>
-                  <strong>Evento Compartido:</strong> Los socios pagarán el costo establecido (se descontará de su cuenta corriente). ASOTEMA recibirá el precio por asistente y neteará la diferencia.
+                  <strong>Evento Compartido:</strong> Valor del evento = Aporte del socio + Aporte de ASOTEMA. Se descontará el aporte del socio de su cuenta corriente y el aporte de ASOTEMA de la cuenta institucional.
                 </>
               ) : (
                 <>
-                  <strong>Cubre ASOTEMA:</strong> ASOTEMA cubrirá todos los costos del evento. Los socios solo pagarán el precio de entrada. El neto (precio - costo) será asumido por ASOTEMA.
+                  <strong>Cubre ASOTEMA:</strong> ASOTEMA cubrirá todo el costo del evento por cada socio que participe. Se descontará el costo por socio de la cuenta institucional de ASOTEMA.
                 </>
               )}
             </p>
           </div>
         )}
 
-        {formData.clase === 'GASTO' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              type="number"
-              label="Precio por Asistente"
-              name="precio_por_asistente"
-              value={formData.precio_por_asistente}
-              onChange={(e) => handleChange('precio_por_asistente', e.target.value)}
-              error={errors.precio_por_asistente}
-              required
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-            />
-
-            <Input
-              type="number"
-              label="Costo por Asistente"
-              name="costo_por_asistente"
-              value={formData.costo_por_asistente}
-              onChange={(e) => handleChange('costo_por_asistente', e.target.value)}
-              error={errors.costo_por_asistente}
-              required
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-            />
+        {formData.clase === 'GASTO' && formData.tipo_evento === 'COMPARTIDO' && 
+         formData.aporte_socio && formData.aporte_asotema && (
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Valor Total del Evento:</span>
+                <span className="text-lg font-bold text-blue-600">
+                  ${(parseFloat(formData.aporte_socio || 0) + parseFloat(formData.aporte_asotema || 0)).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Aporte del Socio:</span>
+                <span className="text-sm font-medium text-orange-600">
+                  ${parseFloat(formData.aporte_socio).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Aporte de ASOTEMA:</span>
+                <span className="text-sm font-medium text-red-600">
+                  ${parseFloat(formData.aporte_asotema).toFixed(2)}
+                </span>
+              </div>
+              <div className="border-t pt-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700">Neto para ASOTEMA:</span>
+                  <span className={`text-lg font-bold ${
+                    parseFloat(formData.aporte_socio) >= 0
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  }`}>
+                    ${parseFloat(formData.aporte_socio).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        {formData.clase === 'GASTO' && formData.precio_por_asistente && formData.costo_por_asistente && (
+        {formData.clase === 'GASTO' && formData.tipo_evento === 'CUBRE_ASOTEMA' && 
+         formData.costo_por_socio && (
           <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-700">Neto por Asistente:</span>
-              <span className={`text-lg font-bold ${
-                (parseFloat(formData.precio_por_asistente) - parseFloat(formData.costo_por_asistente)) >= 0
-                  ? 'text-green-600'
-                  : 'text-red-600'
-              }`}>
-                ${(parseFloat(formData.precio_por_asistente) - parseFloat(formData.costo_por_asistente)).toFixed(2)}
+              <span className="text-sm font-medium text-gray-700">Costo por Socio:</span>
+              <span className="text-lg font-bold text-red-600">
+                ${parseFloat(formData.costo_por_socio).toFixed(2)}
               </span>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Este costo se descontará de la cuenta de ASOTEMA por cada socio que participe.
+            </p>
           </div>
         )}
       </div>

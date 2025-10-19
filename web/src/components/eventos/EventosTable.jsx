@@ -59,10 +59,10 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
               Tipo
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Monto/Precio
+              Valor/Costo
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Costo
+              Aporte Socio
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Asistentes
@@ -110,7 +110,9 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                 <div className="text-sm text-gray-900">
                   {evento.clase === 'INGRESO' 
                     ? formatCurrency(evento.monto_ingreso)
-                    : formatCurrency(evento.precio_por_asistente)
+                    : evento.tipo_evento === 'COMPARTIDO' 
+                      ? formatCurrency(evento.valor_evento)
+                      : formatCurrency(evento.costo_por_socio)
                   }
                 </div>
               </td>
@@ -118,7 +120,9 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                 <div className="text-sm text-gray-900">
                   {evento.clase === 'INGRESO' 
                     ? <span className="text-gray-400">-</span>
-                    : formatCurrency(evento.costo_por_asistente)
+                    : evento.tipo_evento === 'COMPARTIDO' 
+                      ? formatCurrency(evento.aporte_socio)
+                      : <span className="text-gray-400">-</span>
                   }
                 </div>
               </td>

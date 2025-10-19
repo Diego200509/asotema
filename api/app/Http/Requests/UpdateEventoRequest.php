@@ -52,8 +52,14 @@ class UpdateEventoRequest extends FormRequest
             $rules['monto_ingreso'] = ['sometimes', 'numeric', 'min:0.01', 'max:999999.99'];
         } else {
             $rules['tipo_evento'] = ['sometimes', 'in:COMPARTIDO,CUBRE_ASOTEMA'];
-            $rules['precio_por_asistente'] = ['sometimes', 'numeric', 'min:0', 'max:999999.99'];
-            $rules['costo_por_asistente'] = ['sometimes', 'numeric', 'min:0', 'max:999999.99'];
+            
+            // Validaciones específicas por tipo de evento
+            if ($evento && $evento->tipo_evento === 'COMPARTIDO') {
+                $rules['aporte_socio'] = ['sometimes', 'numeric', 'min:0', 'max:999999.99'];
+                $rules['aporte_asotema'] = ['sometimes', 'numeric', 'min:0', 'max:999999.99'];
+            } elseif ($evento && $evento->tipo_evento === 'CUBRE_ASOTEMA') {
+                $rules['costo_por_socio'] = ['sometimes', 'numeric', 'min:0.01', 'max:999999.99'];
+            }
         }
 
         return $rules;
@@ -82,13 +88,19 @@ class UpdateEventoRequest extends FormRequest
             
             'tipo_evento.in' => 'El tipo de evento debe ser COMPARTIDO o CUBRE_ASOTEMA.',
             
-            'precio_por_asistente.numeric' => 'El precio debe ser un número válido.',
-            'precio_por_asistente.min' => 'El precio no puede ser negativo.',
-            'precio_por_asistente.max' => 'El precio no puede exceder $999,999.99.',
+            // Mensajes para COMPARTIDO
+            'aporte_socio.numeric' => 'El aporte del socio debe ser un número válido.',
+            'aporte_socio.min' => 'El aporte del socio no puede ser negativo.',
+            'aporte_socio.max' => 'El aporte del socio no puede exceder $999,999.99.',
             
-            'costo_por_asistente.numeric' => 'El costo debe ser un número válido.',
-            'costo_por_asistente.min' => 'El costo no puede ser negativo.',
-            'costo_por_asistente.max' => 'El costo no puede exceder $999,999.99.',
+            'aporte_asotema.numeric' => 'El aporte de ASOTEMA debe ser un número válido.',
+            'aporte_asotema.min' => 'El aporte de ASOTEMA no puede ser negativo.',
+            'aporte_asotema.max' => 'El aporte de ASOTEMA no puede exceder $999,999.99.',
+            
+            // Mensajes para CUBRE_ASOTEMA
+            'costo_por_socio.numeric' => 'El costo por socio debe ser un número válido.',
+            'costo_por_socio.min' => 'El costo por socio debe ser mayor a 0.',
+            'costo_por_socio.max' => 'El costo por socio no puede exceder $999,999.99.',
         ];
     }
 

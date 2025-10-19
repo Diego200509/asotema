@@ -60,8 +60,10 @@ const Eventos = () => {
     clase: '',
     monto_ingreso: '',
     tipo_evento: '',
-    precio_por_asistente: '',
-    costo_por_asistente: '',
+    valor_evento: '',
+    aporte_socio: '',
+    aporte_asotema: '',
+    costo_por_socio: '',
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -162,8 +164,10 @@ const Eventos = () => {
         clase: evento.clase || '',
         monto_ingreso: evento.monto_ingreso || '',
         tipo_evento: evento.tipo_evento || '',
-        precio_por_asistente: evento.precio_por_asistente || '',
-        costo_por_asistente: evento.costo_por_asistente || '',
+        valor_evento: evento.valor_evento || '',
+        aporte_socio: evento.aporte_socio || '',
+        aporte_asotema: evento.aporte_asotema || '',
+        costo_por_socio: evento.costo_por_socio || '',
       });
       
       setModalFormulario({
@@ -192,8 +196,10 @@ const Eventos = () => {
       clase: '',
       monto_ingreso: '',
       tipo_evento: '',
-      precio_por_asistente: '',
-      costo_por_asistente: '',
+      valor_evento: '',
+      aporte_socio: '',
+      aporte_asotema: '',
+      costo_por_socio: '',
     });
     
     setFormErrors({});
@@ -328,12 +334,25 @@ const Eventos = () => {
         newErrors.tipo_evento = 'El tipo de evento es obligatorio';
       }
 
-      if (!formData.precio_por_asistente || parseFloat(formData.precio_por_asistente) < 0) {
-        newErrors.precio_por_asistente = 'El precio debe ser mayor o igual a 0';
-      }
+      if (formData.tipo_evento === 'COMPARTIDO') {
+        if (!formData.aporte_socio || parseFloat(formData.aporte_socio) < 0) {
+          newErrors.aporte_socio = 'El aporte del socio debe ser mayor o igual a 0';
+        }
 
-      if (!formData.costo_por_asistente || parseFloat(formData.costo_por_asistente) < 0) {
-        newErrors.costo_por_asistente = 'El costo debe ser mayor o igual a 0';
+        if (!formData.aporte_asotema || parseFloat(formData.aporte_asotema) < 0) {
+          newErrors.aporte_asotema = 'El aporte de ASOTEMA debe ser mayor o igual a 0';
+        }
+
+        // Validar que al menos uno de los aportes sea mayor a 0
+        const aporteSocio = parseFloat(formData.aporte_socio || 0);
+        const aporteAsotema = parseFloat(formData.aporte_asotema || 0);
+        if (aporteSocio === 0 && aporteAsotema === 0) {
+          newErrors.aporte_socio = 'Al menos uno de los aportes debe ser mayor a 0';
+        }
+      } else if (formData.tipo_evento === 'CUBRE_ASOTEMA') {
+        if (!formData.costo_por_socio || parseFloat(formData.costo_por_socio) <= 0) {
+          newErrors.costo_por_socio = 'El costo por socio debe ser mayor a 0';
+        }
       }
     }
 
@@ -365,8 +384,17 @@ const Eventos = () => {
         dataToSend.monto_ingreso = parseFloat(formData.monto_ingreso);
       } else if (formData.clase === 'GASTO') {
         dataToSend.tipo_evento = formData.tipo_evento;
-        dataToSend.precio_por_asistente = parseFloat(formData.precio_por_asistente);
-        dataToSend.costo_por_asistente = parseFloat(formData.costo_por_asistente);
+        
+        if (formData.tipo_evento === 'COMPARTIDO') {
+          // Calcular automáticamente el valor del evento
+          const aporteSocio = parseFloat(formData.aporte_socio);
+          const aporteAsotema = parseFloat(formData.aporte_asotema);
+          dataToSend.valor_evento = aporteSocio + aporteAsotema;
+          dataToSend.aporte_socio = aporteSocio;
+          dataToSend.aporte_asotema = aporteAsotema;
+        } else if (formData.tipo_evento === 'CUBRE_ASOTEMA') {
+          dataToSend.costo_por_socio = parseFloat(formData.costo_por_socio);
+        }
       }
 
       if (modalFormulario.isEdit) {

@@ -18,8 +18,10 @@ class Evento extends Model
         'clase',
         'monto_ingreso',
         'tipo_evento',
-        'precio_por_asistente',
-        'costo_por_asistente',
+        'valor_evento',
+        'aporte_socio',
+        'aporte_asotema',
+        'costo_por_socio',
         'contabilizado',
         'creado_por',
     ];
@@ -27,8 +29,10 @@ class Evento extends Model
     protected $casts = [
         'fecha_evento' => 'datetime',
         'monto_ingreso' => 'decimal:2',
-        'precio_por_asistente' => 'decimal:2',
-        'costo_por_asistente' => 'decimal:2',
+        'valor_evento' => 'decimal:2',
+        'aporte_socio' => 'decimal:2',
+        'aporte_asotema' => 'decimal:2',
+        'costo_por_socio' => 'decimal:2',
         'contabilizado' => 'boolean',
         'creado_por' => 'integer',
     ];
@@ -152,7 +156,16 @@ class Evento extends Model
         if ($this->clase === 'INGRESO') {
             return $this->monto_ingreso ?? 0;
         }
-        return $this->total_asistentes_confirmados * $this->precio_por_asistente;
+        
+        if ($this->tipo_evento === 'COMPARTIDO') {
+            return $this->total_asistentes_confirmados * $this->valor_evento;
+        }
+        
+        if ($this->tipo_evento === 'CUBRE_ASOTEMA') {
+            return $this->total_asistentes_confirmados * $this->costo_por_socio;
+        }
+        
+        return 0;
     }
 
     /**
@@ -163,7 +176,16 @@ class Evento extends Model
         if ($this->clase === 'INGRESO') {
             return 0; // Los ingresos no tienen costos asociados
         }
-        return $this->total_asistentes_confirmados * $this->costo_por_asistente;
+        
+        if ($this->tipo_evento === 'COMPARTIDO') {
+            return $this->total_asistentes_confirmados * $this->aporte_asotema;
+        }
+        
+        if ($this->tipo_evento === 'CUBRE_ASOTEMA') {
+            return $this->total_asistentes_confirmados * $this->costo_por_socio;
+        }
+        
+        return 0;
     }
 
     /**
@@ -171,7 +193,19 @@ class Evento extends Model
      */
     public function getNetoPotencialAttribute()
     {
-        return $this->total_ingresos_potenciales - $this->total_costos_potenciales;
+        if ($this->clase === 'INGRESO') {
+            return $this->monto_ingreso ?? 0;
+        }
+        
+        if ($this->tipo_evento === 'COMPARTIDO') {
+            return $this->total_asistentes_confirmados * $this->aporte_socio;
+        }
+        
+        if ($this->tipo_evento === 'CUBRE_ASOTEMA') {
+            return 0; // ASOTEMA no gana nada, solo cubre costos
+        }
+        
+        return 0;
     }
 
     /**

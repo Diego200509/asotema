@@ -52,7 +52,7 @@ class EventoService
                 'clase' => 'INGRESO',
                 'monto_ingreso' => $data['monto_ingreso'],
                 'contabilizado' => false, // Se contabilizará en el siguiente paso
-                'creado_por' => auth()->id(),
+                'creado_por' => auth()->id() ?? 1, // Fallback a usuario admin si no hay autenticación
             ]);
 
             // Contabilizar inmediatamente
@@ -163,66 +163,66 @@ class EventoService
                     throw new \Exception("El socio {$socio->nombre_completo} no tiene cuenta asociada");
                 }
 
-                // 1. Registrar ingreso por precio_por_asistente
-                // DEBE en "Eventos ASOTEMA (Operativo)" por precio
-                $movimientoIngreso = Movimiento::create([
-                    'cuenta_id' => $cuentaEventos->id,
-                    'tipo' => 'DEBE',
-                    'monto' => $evento->precio_por_asistente,
-                    'descripcion' => "Ingreso por evento: {$evento->nombre} - {$socio->nombre_completo}",
-                    'ref_tipo' => 'EVENTO',
-                    'ref_id' => $evento->id,
-                    'creado_por' => auth()->id() ?? $evento->creado_por,
-                ]);
-
-                $resultado['total_ingresos'] += $evento->precio_por_asistente;
-                $resultado['movimientos_creados'][] = [
-                    'tipo' => 'INGRESO',
-                    'cuenta' => 'Eventos ASOTEMA (Operativo)',
-                    'monto' => $evento->precio_por_asistente,
-                    'movimiento_id' => $movimientoIngreso->id
-                ];
-
-                // 2. Procesar según tipo de evento
+                // Procesar según tipo de evento
                 if ($evento->tipo_evento === 'COMPARTIDO') {
-                    // Descuento al socio por costo_por_asistente
-                    // HABER en cuenta CORRIENTE del socio
-                    $movimientoDescuento = Movimiento::create([
+                    // COMPARTIDO: Solo gastos - Socio paga su aporte, ASOTEMA paga el resto
+                    
+                    // 1. Descuento al socio por su aporte
+                    $movimientoDescuentoSocio = Movimiento::create([
                         'cuenta_id' => $socioCuenta->id,
                         'tipo' => 'HABER',
-                        'monto' => $evento->costo_por_asistente,
-                        'descripcion' => "Descuento por evento: {$evento->nombre}",
+                        'monto' => $evento->aporte_socio,
+                        'descripcion' => "Aporte del socio por evento: {$evento->nombre}",
                         'ref_tipo' => 'EVENTO',
                         'ref_id' => $evento->id,
                         'creado_por' => auth()->id() ?? $evento->creado_por,
                     ]);
 
-                    $resultado['total_costos'] += $evento->costo_por_asistente;
                     $resultado['movimientos_creados'][] = [
-                        'tipo' => 'DESCUENTO_SOCIO',
+                        'tipo' => 'APORTE_SOCIO',
                         'cuenta' => "Socio: {$socio->nombre_completo}",
-                        'monto' => $evento->costo_por_asistente,
-                        'movimiento_id' => $movimientoDescuento->id
+                        'monto' => $evento->aporte_socio,
+                        'movimiento_id' => $movimientoDescuentoSocio->id
+                    ];
+
+                    // 2. Gasto de ASOTEMA por su aporte
+                    $movimientoGastoAsotema = Movimiento::create([
+                        'cuenta_id' => $cuentaEventos->id,
+                        'tipo' => 'HABER',
+                        'monto' => $evento->aporte_asotema,
+                        'descripcion' => "Aporte de ASOTEMA por evento: {$evento->nombre} - {$socio->nombre_completo}",
+                        'ref_tipo' => 'EVENTO',
+                        'ref_id' => $evento->id,
+                        'creado_por' => auth()->id() ?? $evento->creado_por,
+                    ]);
+
+                    $resultado['total_costos'] += $evento->aporte_asotema;
+                    $resultado['movimientos_creados'][] = [
+                        'tipo' => 'APORTE_ASOTEMA',
+                        'cuenta' => 'Eventos ASOTEMA (Operativo)',
+                        'monto' => $evento->aporte_asotema,
+                        'movimiento_id' => $movimientoGastoAsotema->id
                     ];
 
                 } elseif ($evento->tipo_evento === 'CUBRE_ASOTEMA') {
-                    // Gasto institucional por costo_por_asistente
-                    // HABER en "Eventos ASOTEMA (Operativo)"
+                    // CUBRE_ASOTEMA: ASOTEMA cubre todo el costo
+                    
+                    // 1. Gasto de ASOTEMA por el costo total
                     $movimientoGasto = Movimiento::create([
                         'cuenta_id' => $cuentaEventos->id,
                         'tipo' => 'HABER',
-                        'monto' => $evento->costo_por_asistente,
-                        'descripcion' => "Gasto por evento: {$evento->nombre} - {$socio->nombre_completo}",
+                        'monto' => $evento->costo_por_socio,
+                        'descripcion' => "Costo cubierto por ASOTEMA - evento: {$evento->nombre} - {$socio->nombre_completo}",
                         'ref_tipo' => 'EVENTO',
                         'ref_id' => $evento->id,
                         'creado_por' => auth()->id() ?? $evento->creado_por,
                     ]);
 
-                    $resultado['total_costos'] += $evento->costo_por_asistente;
+                    $resultado['total_costos'] += $evento->costo_por_socio;
                     $resultado['movimientos_creados'][] = [
-                        'tipo' => 'GASTO_INSTITUCIONAL',
+                        'tipo' => 'COSTO_CUBIERTO',
                         'cuenta' => 'Eventos ASOTEMA (Operativo)',
-                        'monto' => $evento->costo_por_asistente,
+                        'monto' => $evento->costo_por_socio,
                         'movimiento_id' => $movimientoGasto->id
                     ];
                 }
@@ -295,7 +295,7 @@ class EventoService
                     'descripcion' => "REVERSO - {$movimientoOriginal->descripcion}",
                     'ref_tipo' => 'EVENTO_REVERSO',
                     'ref_id' => $evento->id,
-                    'creado_por' => auth()->id(),
+                    'creado_por' => auth()->id() ?? 1, // Fallback a usuario admin si no hay autenticación
                 ]);
 
                 $resultado['movimientos_revertidos']++;
@@ -356,17 +356,31 @@ class EventoService
         } else {
             $asistentesConfirmados = $evento->asistentesConfirmados()->count();
             $resumen['evento']['tipo_evento'] = $evento->tipo_evento;
-            $resumen['asistentes'] = [
-                'total' => $evento->asistentes()->count(),
-                'confirmados' => $asistentesConfirmados,
-                'precio_por_asistente' => $evento->precio_por_asistente,
-                'costo_por_asistente' => $evento->costo_por_asistente,
-            ];
-            $resumen['financiero'] = [
-                'total_ingresos_potenciales' => $asistentesConfirmados * $evento->precio_por_asistente,
-                'total_costos_potenciales' => $asistentesConfirmados * $evento->costo_por_asistente,
-                'neto_potencial' => ($asistentesConfirmados * $evento->precio_por_asistente) - ($asistentesConfirmados * $evento->costo_por_asistente),
-            ];
+            if ($evento->tipo_evento === 'COMPARTIDO') {
+                $resumen['asistentes'] = [
+                    'total' => $evento->asistentes()->count(),
+                    'confirmados' => $asistentesConfirmados,
+                    'valor_evento' => $evento->valor_evento,
+                    'aporte_socio' => $evento->aporte_socio,
+                    'aporte_asotema' => $evento->aporte_asotema,
+                ];
+                $resumen['financiero'] = [
+                    'total_ingresos_potenciales' => 0, // No hay ingresos en eventos GASTO
+                    'total_costos_potenciales' => $asistentesConfirmados * $evento->valor_evento, // Total de gastos
+                    'neto_potencial' => 0, // No hay neto, solo gastos compartidos
+                ];
+            } else {
+                $resumen['asistentes'] = [
+                    'total' => $evento->asistentes()->count(),
+                    'confirmados' => $asistentesConfirmados,
+                    'costo_por_socio' => $evento->costo_por_socio,
+                ];
+                $resumen['financiero'] = [
+                    'total_ingresos_potenciales' => 0,
+                    'total_costos_potenciales' => $asistentesConfirmados * $evento->costo_por_socio,
+                    'neto_potencial' => 0,
+                ];
+            }
         }
 
         // Si está contabilizado, obtener datos reales
@@ -397,17 +411,27 @@ class EventoService
      */
     public function storeGasto(array $data): Evento
     {
-        return Evento::create([
+        $eventoData = [
             'nombre' => $data['nombre'],
             'motivo' => $data['motivo'],
             'fecha_evento' => $data['fecha_evento'],
             'clase' => 'GASTO',
             'tipo_evento' => $data['tipo_evento'],
-            'precio_por_asistente' => $data['precio_por_asistente'],
-            'costo_por_asistente' => $data['costo_por_asistente'],
             'contabilizado' => false, // No se contabiliza hasta llamar /contabilizar
-            'creado_por' => auth()->id(),
-        ]);
+            'creado_por' => auth()->id() ?? 1, // Fallback a usuario admin si no hay autenticación
+        ];
+
+        // Agregar campos específicos según el tipo de evento
+        if ($data['tipo_evento'] === 'COMPARTIDO') {
+            // Calcular valor_evento automáticamente
+            $eventoData['valor_evento'] = $data['aporte_socio'] + $data['aporte_asotema'];
+            $eventoData['aporte_socio'] = $data['aporte_socio'];
+            $eventoData['aporte_asotema'] = $data['aporte_asotema'];
+        } elseif ($data['tipo_evento'] === 'CUBRE_ASOTEMA') {
+            $eventoData['costo_por_socio'] = $data['costo_por_socio'];
+        }
+
+        return Evento::create($eventoData);
     }
 
     /**

@@ -4,12 +4,27 @@ import Button from '../shared/Button';
 
 const ResumenEvento = ({ evento, resumen, onContabilizar, onReversar, canEdit, loading }) => {
   const asistentesConfirmados = resumen?.asistentes?.confirmados || 0;
-  const precioAsistente = parseFloat(evento?.precio_por_asistente || 0);
-  const costoAsistente = parseFloat(evento?.costo_por_asistente || 0);
   
-  const ingresoEstimado = asistentesConfirmados * precioAsistente;
-  const costoEstimado = asistentesConfirmados * costoAsistente;
-  const netoEstimado = ingresoEstimado - costoEstimado;
+  // Calcular valores según el tipo de evento
+  let ingresoEstimado = 0;
+  let costoEstimado = 0;
+  let netoEstimado = 0;
+  
+  if (evento?.tipo_evento === 'COMPARTIDO') {
+    const valorEvento = parseFloat(evento?.valor_evento || 0);
+    const aporteSocio = parseFloat(evento?.aporte_socio || 0);
+    const aporteAsotema = parseFloat(evento?.aporte_asotema || 0);
+    
+    ingresoEstimado = asistentesConfirmados * valorEvento;
+    costoEstimado = asistentesConfirmados * aporteAsotema;
+    netoEstimado = asistentesConfirmados * aporteSocio;
+  } else if (evento?.tipo_evento === 'CUBRE_ASOTEMA') {
+    const costoPorSocio = parseFloat(evento?.costo_por_socio || 0);
+    
+    ingresoEstimado = 0;
+    costoEstimado = asistentesConfirmados * costoPorSocio;
+    netoEstimado = 0;
+  }
 
   // Si está contabilizado, usar datos reales
   const ingresos = evento?.contabilizado 
@@ -44,9 +59,9 @@ const ResumenEvento = ({ evento, resumen, onContabilizar, onReversar, canEdit, l
           <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
             <p className="text-xs text-blue-800">
               {evento.tipo_evento === 'COMPARTIDO' ? (
-                <>Los socios pagan el costo. ASOTEMA netea precio - costo.</>
+                <>Valor del evento = Aporte del socio + Aporte de ASOTEMA. Se descontará el aporte del socio de su cuenta corriente y el aporte de ASOTEMA de la cuenta institucional.</>
               ) : (
-                <>ASOTEMA cubre todos los costos. Socios solo pagan precio de entrada.</>
+                <>ASOTEMA cubrirá todo el costo del evento por cada socio que participe. Se descontará el costo por socio de la cuenta institucional de ASOTEMA.</>
               )}
             </p>
           </div>
@@ -66,55 +81,112 @@ const ResumenEvento = ({ evento, resumen, onContabilizar, onReversar, canEdit, l
           </div>
         </div>
 
-        {/* Precio y Costo por asistente */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Campos específicos según tipo de evento */}
+        {evento?.tipo_evento === 'COMPARTIDO' && (
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="text-xs font-medium text-blue-700 mb-1">Valor/Evento</div>
+              <div className="text-lg font-bold text-blue-900">{formatCurrency(evento?.valor_evento || 0)}</div>
+            </div>
+            <div className="bg-orange-50 rounded-lg p-4">
+              <div className="text-xs font-medium text-orange-700 mb-1">Aporte Socio</div>
+              <div className="text-lg font-bold text-orange-900">{formatCurrency(evento?.aporte_socio || 0)}</div>
+            </div>
+            <div className="bg-red-50 rounded-lg p-4">
+              <div className="text-xs font-medium text-red-700 mb-1">Aporte ASOTEMA</div>
+              <div className="text-lg font-bold text-red-900">{formatCurrency(evento?.aporte_asotema || 0)}</div>
+            </div>
+          </div>
+        )}
+
+        {evento?.tipo_evento === 'CUBRE_ASOTEMA' && (
+          <div className="bg-red-50 rounded-lg p-4">
+            <div className="text-xs font-medium text-red-700 mb-1">Costo por Socio</div>
+            <div className="text-lg font-bold text-red-900">{formatCurrency(evento?.costo_por_socio || 0)}</div>
+          </div>
+        )}
+
+        {/* Ingresos - Solo para eventos que generen ingresos reales */}
+        {evento?.clase === 'INGRESO' && (
           <div className="bg-green-50 rounded-lg p-4">
-            <div className="text-xs font-medium text-green-700 mb-1">Precio/Asistente</div>
-            <div className="text-lg font-bold text-green-900">{formatCurrency(precioAsistente)}</div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-green-700">
+                {evento?.contabilizado ? 'Ingresos Totales' : 'Ingresos Estimados'}
+              </span>
+              <span className="text-xl font-bold text-green-900">{formatCurrency(ingresos)}</span>
+            </div>
+            <div className="mt-1 text-xs text-green-600">
+              {asistentesConfirmados} × {formatCurrency(evento?.monto_ingreso || 0)}
+            </div>
           </div>
-          <div className="bg-orange-50 rounded-lg p-4">
-            <div className="text-xs font-medium text-orange-700 mb-1">Costo/Asistente</div>
-            <div className="text-lg font-bold text-orange-900">{formatCurrency(costoAsistente)}</div>
-          </div>
-        </div>
+        )}
 
-        {/* Ingresos */}
-        <div className="bg-green-50 rounded-lg p-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-green-700">
-              {evento?.contabilizado ? 'Ingresos Totales' : 'Ingresos Estimados'}
-            </span>
-            <span className="text-xl font-bold text-green-900">{formatCurrency(ingresos)}</span>
-          </div>
-          <div className="mt-1 text-xs text-green-600">
-            {asistentesConfirmados} × {formatCurrency(precioAsistente)}
-          </div>
-        </div>
-
-        {/* Costos */}
+        {/* Gastos Totales */}
         <div className="bg-orange-50 rounded-lg p-4">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-orange-700">
-              {evento?.contabilizado ? 'Costos Totales' : 'Costos Estimados'}
+              {evento?.contabilizado ? 'Gastos Totales' : 'Gastos Estimados'}
             </span>
             <span className="text-xl font-bold text-orange-900">{formatCurrency(costos)}</span>
           </div>
           <div className="mt-1 text-xs text-orange-600">
-            {asistentesConfirmados} × {formatCurrency(costoAsistente)}
+            {evento?.tipo_evento === 'COMPARTIDO' ? (
+              <>{asistentesConfirmados} × {formatCurrency(evento?.valor_evento || 0)} (Total del evento)</>
+            ) : (
+              <>{asistentesConfirmados} × {formatCurrency(evento?.costo_por_socio || 0)} (Costo por socio)</>
+            )}
           </div>
         </div>
 
-        {/* Neto */}
-        <div className={`${neto >= 0 ? 'bg-blue-50' : 'bg-red-50'} rounded-lg p-4`}>
-          <div className="flex justify-between items-center">
-            <span className={`text-sm font-medium ${neto >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
-              {evento?.contabilizado ? 'Neto Real' : 'Neto Estimado'}
-            </span>
-            <span className={`text-2xl font-bold ${neto >= 0 ? 'text-blue-900' : 'text-red-900'}`}>
-              {formatCurrency(neto)}
-            </span>
+        {/* Gastos de Socios - Solo para eventos COMPARTIDO */}
+        {evento?.tipo_evento === 'COMPARTIDO' && (
+          <div className="bg-purple-50 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-purple-700">
+                {evento?.contabilizado ? 'Gastos de Socios' : 'Gastos Estimados de Socios'}
+              </span>
+              <span className="text-xl font-bold text-purple-900">
+                {formatCurrency(asistentesConfirmados * (evento?.aporte_socio || 0))}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-purple-600">
+              {asistentesConfirmados} × {formatCurrency(evento?.aporte_socio || 0)} (Aporte por socio)
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Neto - Solo para eventos que generen ingresos reales */}
+        {evento?.clase === 'INGRESO' && (
+          <div className={`${neto >= 0 ? 'bg-blue-50' : 'bg-red-50'} rounded-lg p-4`}>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-medium ${neto >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+                {evento?.contabilizado ? 'Neto Real' : 'Neto Estimado'}
+              </span>
+              <span className={`text-2xl font-bold ${neto >= 0 ? 'text-blue-900' : 'text-red-900'}`}>
+                {formatCurrency(neto)}
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-blue-600">
+              Ingreso menos costos
+            </div>
+          </div>
+        )}
+
+        {evento?.tipo_evento === 'CUBRE_ASOTEMA' && (
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700">
+                Neto para ASOTEMA
+              </span>
+              <span className="text-2xl font-bold text-gray-900">
+                $0.00
+              </span>
+            </div>
+            <div className="mt-1 text-xs text-gray-600">
+              ASOTEMA no gana nada, solo cubre costos
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Botones de acción */}
