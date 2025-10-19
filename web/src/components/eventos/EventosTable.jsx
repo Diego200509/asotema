@@ -32,10 +32,8 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
     if (evento.clase === 'INGRESO') {
       return parseFloat(evento.monto_ingreso) || 0;
     }
-    const asistentes = evento.total_asistentes_confirmados || 0;
-    const precio = parseFloat(evento.precio_por_asistente) || 0;
-    const costo = parseFloat(evento.costo_por_asistente) || 0;
-    return (precio - costo) * asistentes;
+    // Para eventos GASTO, no hay "neto estimado" con la nueva lógica
+    return 0;
   };
 
   return (
@@ -135,9 +133,13 @@ const EventosTable = ({ eventos, onView, onEdit, onDelete, onContabilizar, onRev
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className={`text-sm font-semibold ${calcularNetoEstimado(evento) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatCurrency(calcularNetoEstimado(evento))}
-                </div>
+                {evento.clase === 'INGRESO' ? (
+                  <div className="text-sm font-semibold text-green-600">
+                    {formatCurrency(calcularNetoEstimado(evento))}
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-400">-</span>
+                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <Badge variant={getEstadoBadgeVariant(evento.contabilizado)}>

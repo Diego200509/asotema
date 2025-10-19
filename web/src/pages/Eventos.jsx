@@ -102,15 +102,15 @@ const Eventos = () => {
       const response = await eventosService.list(params);
       
       if (response.success && response.data) {
-        // La respuesta tiene esta estructura: { success: true, data: { data: [...], meta: {...} } }
+        // La respuesta tiene esta estructura: { success: true, data: { data: [...], current_page: 1, last_page: 1, total: 0, ... } }
         const eventosData = response.data;
         
         setEventos(eventosData.data || []);
         setPagination({
-          current_page: eventosData.meta?.current_page || 1,
-          last_page: eventosData.meta?.last_page || 1,
-          per_page: eventosData.meta?.per_page || 15,
-          total: eventosData.meta?.total || 0,
+          current_page: eventosData.current_page || 1,
+          last_page: eventosData.last_page || 1,
+          per_page: 6, // Mantener 6 registros por página
+          total: eventosData.total || 0,
         });
       } else {
         throw new Error(response.message || 'Error al cargar eventos');
@@ -451,9 +451,12 @@ const Eventos = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Eventos</h1>
         {canEdit && (
-          <Button onClick={handleNuevo}>
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Nuevo Evento
+          <Button
+            variant="primary"
+            onClick={handleNuevo}
+            className="w-full sm:w-auto"
+          >
+            + Nuevo Evento
           </Button>
         )}
       </div>
@@ -513,12 +516,14 @@ const Eventos = () => {
             </div>
             
             {/* Paginación */}
-            {pagination.last_page > 1 && (
+            {eventos.length > 0 && (
               <div className="border-t border-gray-200 px-6 py-4 bg-white">
                 <Pagination
                   currentPage={pagination.current_page}
-                  lastPage={pagination.last_page}
+                  totalPages={pagination.last_page}
                   onPageChange={handlePageChange}
+                  totalItems={pagination.total}
+                  perPage={pagination.per_page}
                 />
               </div>
             )}

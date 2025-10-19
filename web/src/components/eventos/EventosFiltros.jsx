@@ -1,16 +1,57 @@
+import { useState } from 'react';
 import Input from '../shared/Input';
 import Select from '../shared/Select';
+import { useToast } from '../../context/ToastContext';
 
 const EventosFiltros = ({ filtros, onFiltroChange }) => {
+  const [fechasLocales, setFechasLocales] = useState({
+    desde: filtros.desde || '',
+    hasta: filtros.hasta || ''
+  });
+  const { showWarning, showError } = useToast();
+
   const limpiarFiltros = () => {
     onFiltroChange('q', '');
     onFiltroChange('desde', '');
     onFiltroChange('hasta', '');
     onFiltroChange('tipo', '');
     onFiltroChange('contabilizado', '');
+    setFechasLocales({ desde: '', hasta: '' });
   };
 
-  const tieneFiltros = filtros.q || filtros.desde || filtros.hasta || filtros.tipo || filtros.contabilizado;
+  const validarFechas = (desde, hasta) => {
+    if (desde && hasta) {
+      const fechaInicio = new Date(desde);
+      const fechaFin = new Date(hasta);
+      
+      if (fechaFin < fechaInicio) {
+        showError('La fecha fin no puede ser anterior a la fecha inicio');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleFechaChange = (campo, valor) => {
+    // Actualizar el estado local primero
+    const nuevasFechas = { ...fechasLocales, [campo]: valor };
+    setFechasLocales(nuevasFechas);
+    
+    // Validar fechas
+    const esValido = validarFechas(nuevasFechas.desde, nuevasFechas.hasta);
+    
+    // Solo aplicar filtro si ambas fechas están completas y son válidas
+    if (nuevasFechas.desde && nuevasFechas.hasta && esValido) {
+      onFiltroChange('desde', nuevasFechas.desde);
+      onFiltroChange('hasta', nuevasFechas.hasta);
+    } else if (!nuevasFechas.desde || !nuevasFechas.hasta) {
+      // Si no están completas, limpiar el filtro
+      onFiltroChange('desde', '');
+      onFiltroChange('hasta', '');
+    }
+  };
+
+  const tieneFiltros = filtros.q || (filtros.desde && filtros.hasta) || filtros.tipo || filtros.contabilizado;
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
@@ -28,8 +69,15 @@ const EventosFiltros = ({ filtros, onFiltroChange }) => {
           <Input
             type="date"
             label="Desde"
-            value={filtros.desde}
-            onChange={(e) => onFiltroChange('desde', e.target.value)}
+            value={fechasLocales.desde}
+            onChange={(e) => {
+              const valor = e.target.value;
+              handleFechaChange('desde', valor);
+              if (valor && !fechasLocales.hasta) {
+                showWarning('Complete la fecha "Hasta" para aplicar el filtro');
+              }
+            }}
+            placeholder="dd/mm/aaaa"
           />
         </div>
         
@@ -37,8 +85,15 @@ const EventosFiltros = ({ filtros, onFiltroChange }) => {
           <Input
             type="date"
             label="Hasta"
-            value={filtros.hasta}
-            onChange={(e) => onFiltroChange('hasta', e.target.value)}
+            value={fechasLocales.hasta}
+            onChange={(e) => {
+              const valor = e.target.value;
+              handleFechaChange('hasta', valor);
+              if (valor && !fechasLocales.desde) {
+                showWarning('Complete la fecha "Desde" para aplicar el filtro');
+              }
+            }}
+            placeholder="dd/mm/aaaa"
           />
         </div>
         
@@ -47,11 +102,12 @@ const EventosFiltros = ({ filtros, onFiltroChange }) => {
             label="Tipo"
             value={filtros.tipo}
             onChange={(e) => onFiltroChange('tipo', e.target.value)}
-          >
-            <option value="">Todos</option>
-            <option value="COMPARTIDO">Compartido</option>
-            <option value="CUBRE_ASOTEMA">Cubre ASOTEMA</option>
-          </Select>
+            options={[
+              { value: '', label: 'Todos' },
+              { value: 'COMPARTIDO', label: 'Compartido' },
+              { value: 'CUBRE_ASOTEMA', label: 'Cubre ASOTEMA' }
+            ]}
+          />
         </div>
         
         <div>
@@ -59,11 +115,12 @@ const EventosFiltros = ({ filtros, onFiltroChange }) => {
             label="Estado"
             value={filtros.contabilizado}
             onChange={(e) => onFiltroChange('contabilizado', e.target.value)}
-          >
-            <option value="">Todos</option>
-            <option value="false">Pendiente</option>
-            <option value="true">Contabilizado</option>
-          </Select>
+            options={[
+              { value: '', label: 'Todos' },
+              { value: 'false', label: 'Pendiente' },
+              { value: 'true', label: 'Contabilizado' }
+            ]}
+          />
         </div>
         
         {/* Botón limpiar filtros - Solo se muestra cuando hay filtros activos */}
@@ -89,14 +146,9 @@ const EventosFiltros = ({ filtros, onFiltroChange }) => {
               Búsqueda: "{filtros.q}"
             </span>
           )}
-          {filtros.desde && (
+          {filtros.desde && filtros.hasta && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              Desde: {new Date(filtros.desde).toLocaleDateString('es-EC')}
-            </span>
-          )}
-          {filtros.hasta && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              Hasta: {new Date(filtros.hasta).toLocaleDateString('es-EC')}
+              Desde: {new Date(filtros.desde).toLocaleDateString('es-EC')} - Hasta: {new Date(filtros.hasta).toLocaleDateString('es-EC')}
             </span>
           )}
           {filtros.tipo && (

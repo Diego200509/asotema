@@ -10,8 +10,7 @@ const Pagination = ({
   totalItems = 0,
   perPage = 6
 }) => {
-  // No mostrar paginación si hay menos de 7 registros (para activar con 6+)
-  if (totalItems < 7) return null;
+  // Siempre mostrar información de página, pero solo controles si hay más de una página
 
   // Calcular qué páginas mostrar
   const getVisiblePages = () => {
@@ -44,8 +43,9 @@ const Pagination = ({
         </div>
       )}
       
-      {/* Controles de paginación */}
-      <div className="flex items-center gap-2">
+      {/* Controles de paginación - Solo mostrar si hay más de una página */}
+      {totalPages > 1 && (
+        <div className="flex items-center gap-2">
         {/* Primera página */}
         {showFirstLast && currentPage > 1 && (
           <button
@@ -108,7 +108,8 @@ const Pagination = ({
             »»
           </button>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
