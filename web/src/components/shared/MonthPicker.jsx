@@ -16,6 +16,12 @@ const MonthPicker = ({
     const options = [];
     const currentDate = new Date();
     
+    // Nombres de meses en español
+    const monthNames = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ];
+    
     for (let i = 0; i < 12; i++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
       const year = date.getFullYear();
@@ -24,14 +30,12 @@ const MonthPicker = ({
       
       // Verificar si no excede el mes máximo
       if (!maxMonth || monthYear <= maxMonth) {
-        const monthName = date.toLocaleDateString('es-EC', { 
-          year: 'numeric', 
-          month: 'long' 
-        });
+        const monthName = monthNames[date.getMonth()];
+        const label = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
         
         options.push({
           value: monthYear,
-          label: monthName.charAt(0).toUpperCase() + monthName.slice(1)
+          label: label
         });
       }
     }

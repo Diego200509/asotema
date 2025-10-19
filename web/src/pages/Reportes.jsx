@@ -83,6 +83,23 @@ const Reportes = () => {
               </button>
             </div>
           </Card>
+
+          <Card>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Descuentos Mensuales
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Reporte de descuentos mensuales por socio
+              </p>
+              <button 
+                onClick={() => window.location.href = '/reportes/descuentos-mensuales'}
+                className="text-green-600 hover:text-green-700 font-medium transition-colors"
+              >
+                Ver Reporte →
+              </button>
+            </div>
+          </Card>
         </div>
       </div>
     </Layout>

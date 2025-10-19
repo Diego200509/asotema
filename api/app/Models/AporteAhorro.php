@@ -99,7 +99,24 @@ class AporteAhorro extends Model
     public function getMesAttribute($value)
     {
         if (!$value) return null;
-        return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m-d');
+        
+        // Si el valor ya está en formato Y-m (ej: 2025-10), devolverlo tal como está
+        if (preg_match('/^\d{4}-\d{2}$/', $value)) {
+            return $value;
+        }
+        
+        // Si el valor está en formato Y-m-d (ej: 2025-10-01), extraer solo Y-m
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m');
+        }
+        
+        // Fallback: intentar parsear como fecha completa
+        try {
+            return \Carbon\Carbon::createFromFormat('Y-m-d', $value, 'America/Guayaquil')->format('Y-m');
+        } catch (\Exception $e) {
+            // Si falla, devolver el valor original
+            return $value;
+        }
     }
 
     /**

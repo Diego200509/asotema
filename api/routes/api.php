@@ -64,6 +64,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/socios/{socio}/estado-cuenta/pdf', [SocioController::class, 'estadoCuentaPDF'])->middleware('jwt.auth');
     Route::get('/socios/{socio}/reporte-ahorros/pdf', [SocioController::class, 'reporteAhorrosPDF'])->middleware('jwt.auth');
     Route::get('/socios/{socio}/reporte-prestamos/pdf', [SocioController::class, 'reportePrestamosPDF'])->middleware('jwt.auth');
+    Route::get('/reportes/descuentos-mensuales/preview', [ReportesController::class, 'descuentosMensualesPreview'])->middleware('jwt.auth');
 
     // Rutas CRUD de préstamos
     Route::prefix('prestamos')->group(function () {
@@ -91,6 +92,11 @@ Route::middleware(['auth:api'])->group(function () {
         Route::middleware(['role:ADMIN,TESORERO'])->group(function () {
             Route::get('/cartera-prestamos', [ReportesController::class, 'carteraPrestamos']);
             Route::get('/ingresos-intereses', [ReportesController::class, 'ingresosIntereses']);
+            
+            // Descuentos mensuales
+            Route::get('/descuentos-mensuales/meses', [ReportesController::class, 'descuentosMensualesMeses']);
+            Route::get('/descuentos-mensuales', [ReportesController::class, 'descuentosMensuales']);
+            Route::get('/descuentos-mensuales/pdf', [ReportesController::class, 'descuentosMensualesPdf']);
         });
     });
 

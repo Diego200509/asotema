@@ -178,4 +178,129 @@ class ReportesController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Obtener meses disponibles para descuentos mensuales
+     */
+    public function descuentosMensualesMeses(): JsonResponse
+    {
+        try {
+            $descuentosService = new \App\Services\DescuentosMensualesService();
+            $meses = $descuentosService->obtenerMesesDisponibles();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $meses
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener meses disponibles: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener descuentos mensuales
+     */
+    public function descuentosMensuales(Request $request): JsonResponse
+    {
+        $request->validate([
+            'mes' => 'required|date_format:Y-m'
+        ]);
+
+        try {
+            $descuentosService = new \App\Services\DescuentosMensualesService();
+            $descuentos = $descuentosService->obtenerDescuentosMensuales($request->mes);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $descuentos
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener descuentos mensuales: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generar PDF de descuentos mensuales
+     */
+    public function descuentosMensualesPdf(Request $request)
+    {
+        $request->validate([
+            'mes' => 'required|date_format:Y-m'
+        ]);
+
+        try {
+            $descuentosService = new \App\Services\DescuentosMensualesService();
+            $descuentos = $descuentosService->obtenerDescuentosMensuales($request->mes);
+            
+            $pdf = \PDF::loadView('reports.descuentos-mensuales', compact('descuentos'));
+            
+            $nombreArchivo = 'descuentos-mensuales-' . $request->mes . '.pdf';
+            
+            return $pdf->download($nombreArchivo);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Vista previa del PDF de descuentos mensuales
+     */
+    public function descuentosMensualesPreview(Request $request)
+    {
+        $request->validate([
+            'mes' => 'required|date_format:Y-m'
+        ]);
+
+        try {
+            \Log::info('Iniciando generación de PDF de descuentos mensuales para mes: ' . $request->mes);
+            
+            $descuentosService = new \App\Services\DescuentosMensualesService();
+            $descuentos = $descuentosService->obtenerDescuentosMensuales($request->mes);
+            
+            \Log::info('Datos de descuentos obtenidos exitosamente');
+            
+            // Verificar que la vista existe
+            $viewPath = resource_path('views/reports/descuentos-mensuales.blade.php');
+            if (!file_exists($viewPath)) {
+                \Log::error('Vista no encontrada: ' . $viewPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vista del PDF no encontrada'
+                ], 500);
+            }
+            
+            \Log::info('Generando PDF con DomPDF');
+            // Generar PDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.descuentos-mensuales', [
+                'descuentos' => $descuentos
+            ]);
+            
+            $pdf->setPaper('A4', 'landscape');
+            
+            $filename = "descuentos_mensuales_{$request->mes}.pdf";
+            $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename); // Limpiar caracteres especiales
+            
+            \Log::info('PDF generado exitosamente, descargando como: ' . $filename);
+            
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al generar PDF de descuentos mensuales: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar vista previa: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

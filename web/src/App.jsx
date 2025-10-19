@@ -14,6 +14,7 @@ import AhorrosHistorico from './pages/AhorrosHistorico';
 import Eventos from './pages/Eventos';
 import EventoDetalle from './pages/EventoDetalle';
 import Reportes from './pages/Reportes';
+import DescuentosMensuales from './pages/DescuentosMensuales';
 
 function App() {
   return (
@@ -128,6 +129,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <Reportes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reportes/descuentos-mensuales"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
+                  <DescuentosMensuales />
                 </ProtectedRoute>
               }
             />
