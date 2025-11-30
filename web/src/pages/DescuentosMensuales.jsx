@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Layout from '../components/layout/Layout';
-import Button from '../components/shared/Button';
 import Select from '../components/shared/Select';
 import PDFPreview from '../components/shared/PDFPreview';
 import descuentosMensualesService from '../services/descuentosMensualesService';
 
 const DescuentosMensuales = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
   
@@ -99,14 +101,26 @@ const DescuentosMensuales = () => {
 
   return (
     <Layout>
-      <div className="p-6">
+      <div className="h-full flex flex-col">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Descuentos Mensuales</h1>
-          <p className="text-gray-600">Generar reporte de descuentos mensuales por socio</p>
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => navigate('/reportes')}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Volver
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Descuentos Mensuales</h1>
+              <p className="text-gray-600">Generar reporte de descuentos mensuales por socio</p>
+            </div>
+          </div>
         </div>
 
-        {/* Selector de mes */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+          {/* Selector de mes */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-end space-x-4">
             <div className="flex-1">
               <Select
@@ -176,6 +190,7 @@ const DescuentosMensuales = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
     </Layout>
   );

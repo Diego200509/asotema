@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '../../context/ToastContext';
 import axios from '../../config/axios';
 import Card from '../shared/Card';
-import Button from '../shared/Button';
 import Badge from '../shared/Badge';
+import Pagination from '../shared/Pagination';
 import { EyeIcon } from '@heroicons/react/24/outline';
 import { formatDateForEcuador } from '../../utils/dateUtils';
 
@@ -12,9 +12,10 @@ const ListaSociosReportes = ({ onViewReporte }) => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const { showError } = useToast();
 
-  const itemsPerPage = 6;
+  const perPage = 6;
 
   // Cargar socios
   const fetchSocios = async (page = 1) => {
@@ -23,13 +24,16 @@ const ListaSociosReportes = ({ onViewReporte }) => {
       const response = await axios.get('/socios', {
         params: {
           page,
-          per_page: itemsPerPage
+          per_page: perPage
         }
       });
 
-      setSocios(response.data.data?.data || []);
-      setTotalPages(response.data.data?.last_page || 1);
-      setCurrentPage(page);
+      if (response.data.success) {
+        setSocios(response.data.data.data || []);
+        setTotalPages(response.data.data.last_page || 1);
+        setTotalItems(response.data.data.total || 0);
+        setCurrentPage(page);
+      }
     } catch (error) {
       console.error('Error al cargar socios:', error);
       showError('Error al cargar la lista de socios');
@@ -51,8 +55,8 @@ const ListaSociosReportes = ({ onViewReporte }) => {
   };
 
   return (
-    <Card className="flex-1 flex flex-col">
-      <div className="flex-1 overflow-hidden">
+    <Card className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-auto">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
@@ -65,96 +69,73 @@ const ListaSociosReportes = ({ onViewReporte }) => {
             <p className="text-gray-600">No se encontraron socios</p>
           </div>
         ) : (
-          <div className="h-full flex flex-col">
-            {/* Tabla con scroll interno */}
-            <div className="flex-1 overflow-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Socio
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cédula
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha Ingreso
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {socios.map((socio) => (
-                    <tr key={socio.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {socio.nombres} {socio.apellidos}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{socio.cedula}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge variant={getEstadoBadgeVariant(socio.estado)}>
-                          {socio.estado}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {formatDateForEcuador(socio.fecha_ingreso)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => onViewReporte(socio)}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
-                          title="Ver Reportes"
-                        >
-                          <EyeIcon className="w-5 h-5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
-                    Página {currentPage} de {totalPages}
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      variant="outline"
-                      size="sm"
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50 sticky top-0">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Socio
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cédula
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Fecha Ingreso
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {socios.map((socio) => (
+                <tr key={socio.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {socio.nombres} {socio.apellidos}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{socio.cedula}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant={getEstadoBadgeVariant(socio.estado)}>
+                      {socio.estado}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {formatDateForEcuador(socio.fecha_ingreso)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <button
+                      onClick={() => onViewReporte(socio)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                      title="Ver Reportes"
                     >
-                      Anterior
-                    </Button>
-                    <Button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Siguiente
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+                      <EyeIcon className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
+      
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        perPage={perPage}
+        showInfo={true}
+        showFirstLast={true}
+        maxVisiblePages={5}
+      />
     </Card>
   );
 };

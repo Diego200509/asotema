@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/shared/Card';
 import EstadosCuentaReportes from '../components/reportes/EstadosCuentaReportes';
+import EstadoCuentaAsotema from '../components/reportes/EstadoCuentaAsotema';
 
 const Reportes = () => {
   const [activeReport, setActiveReport] = useState(null);
@@ -23,6 +24,14 @@ const Reportes = () => {
     );
   }
 
+  if (activeReport === 'estado-asotema') {
+    return (
+      <Layout>
+        <EstadoCuentaAsotema onBack={handleBack} />
+      </Layout>
+    );
+  }
+
   // Vista principal con las tarjetas de reportes
   return (
     <Layout>
@@ -36,30 +45,13 @@ const Reportes = () => {
           <Card>
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Cartera de Préstamos
+                Estado de Cuenta ASOTEMA
               </h3>
               <p className="text-gray-600 mb-4">
-                Reporte de capital pendiente en cartera
+                Estado de cuenta consolidado de todas las cuentas institucionales
               </p>
               <button 
-                onClick={() => handleReportClick('cartera-prestamos')}
-                className="text-green-600 hover:text-green-700 font-medium transition-colors"
-              >
-                Ver Reporte →
-              </button>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Ingresos por Intereses
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Reporte de ingresos generados por intereses
-              </p>
-              <button 
-                onClick={() => handleReportClick('ingresos-intereses')}
+                onClick={() => handleReportClick('estado-asotema')}
                 className="text-green-600 hover:text-green-700 font-medium transition-colors"
               >
                 Ver Reporte →

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../shared/Header';
 import Sidebar from './Sidebar';
+import ConfirmModal from '../shared/ConfirmModal';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -26,19 +27,53 @@ const Layout = ({ children }) => {
   });
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
-  // Detectar la sección activa según la ruta actual
+  // Detectar la sección activa según la ruta actual y redirigir CAJERO si es necesario
   useEffect(() => {
+    // Si el usuario es CAJERO y está intentando acceder a una ruta que no sea reportes, redirigir
+    if (user && user.rol === 'CAJERO') {
+      const currentPath = location.pathname;
+      if (!currentPath.startsWith('/reportes') && currentPath !== '/') {
+        navigate('/reportes');
+        return;
+      }
+    }
+    
     const newActiveSection = getActiveSectionFromPath(location.pathname);
     setActiveSection(newActiveSection);
-  }, [location.pathname]);
+  }, [location.pathname, user, navigate]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  const handleLogout = () => {
+    // Mostrar modal de confirmación en lugar de cerrar sesión directamente
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setLogoutLoading(true);
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    } finally {
+      setLogoutLoading(false);
+      setShowLogoutConfirm(false);
+    }
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
       const handleSectionChange = (section) => {
+        // Si el usuario es CAJERO, solo permitir acceso a reportes
+        if (user && user.rol === 'CAJERO' && section !== 'reportes') {
+          navigate('/reportes');
+          return;
+        }
+        
         setActiveSection(section);
         // Navegar a la sección correspondiente
         if (section === 'usuarios') {
@@ -92,6 +127,19 @@ const Layout = ({ children }) => {
           {children}
         </main>
       </div>
+
+      {/* Modal de confirmación para cerrar sesión */}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={cancelLogout}
+        onConfirm={confirmLogout}
+        title="Cerrar Sesión"
+        message="¿Estás seguro de que deseas cerrar sesión?"
+        confirmText="Cerrar Sesión"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={logoutLoading}
+      />
     </div>
   );
 };

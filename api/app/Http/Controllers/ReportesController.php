@@ -303,4 +303,223 @@ class ReportesController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Obtener estado de cuenta de ASOTEMA (todas las cuentas)
+     */
+    public function estadoAsotema(Request $request): JsonResponse
+    {
+        try {
+            // Obtener todas las cuentas de ASOTEMA
+            $cuentas = Cuenta::where('propietario_tipo', 'ASOTEMA')
+                ->whereNull('propietario_id')
+                ->orderBy('nombre')
+                ->get();
+
+            if ($cuentas->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron cuentas de ASOTEMA'
+                ], 404);
+            }
+
+            // Obtener información de cada cuenta
+            $cuentasConDatos = $cuentas->map(function ($cuenta) {
+                $resumen = $this->contabilidadService->obtenerResumenCuenta($cuenta->id);
+                $saldo = $this->contabilidadService->saldoCuenta($cuenta->id);
+                $movimientos = $this->contabilidadService->obtenerMovimientos($cuenta->id);
+
+                return [
+                    'id' => $cuenta->id,
+                    'nombre' => $cuenta->nombre,
+                    'tipo' => $cuenta->tipo,
+                    'resumen' => $resumen,
+                    'saldo_actual' => $saldo,
+                    'movimientos' => $movimientos->map(function ($movimiento) {
+                        return [
+                            'id' => $movimiento->id,
+                            'tipo' => $movimiento->tipo,
+                            'monto' => $movimiento->monto,
+                            'ref_tipo' => $movimiento->ref_tipo,
+                            'ref_id' => $movimiento->ref_id,
+                            'descripcion' => $movimiento->descripcion,
+                            'creado_por' => $movimiento->creadoPor->nombre ?? 'N/A',
+                            'fecha' => $movimiento->created_at->setTimezone('America/Guayaquil')->format('Y-m-d'),
+                        ];
+                    })
+                ];
+            });
+
+            // Calcular totales generales
+            $totalDebe = $cuentasConDatos->sum(function ($cuenta) {
+                return $cuenta['resumen']['total_debe'];
+            });
+            $totalHaber = $cuentasConDatos->sum(function ($cuenta) {
+                return $cuenta['resumen']['total_haber'];
+            });
+            $saldoTotal = $cuentasConDatos->sum('saldo_actual');
+            $totalMovimientos = $cuentasConDatos->sum(function ($cuenta) {
+                return $cuenta['resumen']['total_movimientos'];
+            });
+
+            // Obtener todos los movimientos consolidados (ordenados por fecha)
+            $todosLosMovimientos = collect();
+            foreach ($cuentasConDatos as $cuenta) {
+                foreach ($cuenta['movimientos'] as $movimiento) {
+                    $todosLosMovimientos->push([
+                        ...$movimiento,
+                        'cuenta_id' => $cuenta['id'],
+                        'cuenta_nombre' => $cuenta['nombre'],
+                    ]);
+                }
+            }
+
+            // Ordenar movimientos por fecha descendente
+            $todosLosMovimientos = $todosLosMovimientos->sortByDesc('fecha')->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'cuentas' => $cuentasConDatos,
+                    'resumen_general' => [
+                        'total_cuentas' => $cuentasConDatos->count(),
+                        'total_movimientos' => $totalMovimientos,
+                        'total_debe' => $totalDebe,
+                        'total_haber' => $totalHaber,
+                        'saldo_total' => $saldoTotal,
+                    ],
+                    'movimientos_consolidados' => $todosLosMovimientos,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener estado de cuenta de ASOTEMA: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generar PDF del estado de cuenta de ASOTEMA
+     */
+    public function estadoAsotemaPDF()
+    {
+        try {
+            \Log::info('Iniciando generación de PDF de estado de cuenta ASOTEMA');
+            
+            // Obtener el estado de cuenta de ASOTEMA
+            $estadoCuentaResponse = $this->estadoAsotema(request());
+            $responseData = $estadoCuentaResponse->getData();
+            
+            if (!$responseData || !$responseData->success) {
+                \Log::error('Error al obtener estado de cuenta: ' . json_encode($responseData));
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al obtener el estado de cuenta de ASOTEMA'
+                ], 500);
+            }
+            
+            $estadoCuenta = $responseData->data;
+            \Log::info('Estado de cuenta obtenido exitosamente');
+            
+            // Verificar que la vista existe
+            $viewPath = resource_path('views/reports/estado-cuenta-asotema.blade.php');
+            if (!file_exists($viewPath)) {
+                \Log::error('Vista no encontrada: ' . $viewPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vista del PDF no encontrada'
+                ], 500);
+            }
+            
+            \Log::info('Generando PDF con DomPDF');
+            // Convertir objeto a array para la vista Blade
+            $estadoCuentaArray = json_decode(json_encode($estadoCuenta), true);
+            
+            // Generar PDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.estado-cuenta-asotema', [
+                'estadoCuenta' => $estadoCuentaArray
+            ]);
+            
+            $pdf->setPaper('A4', 'portrait');
+            
+            $filename = "estado_cuenta_asotema_" . date('Y-m-d') . ".pdf";
+            $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
+            
+            \Log::info('PDF generado exitosamente, descargando como: ' . $filename);
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al generar PDF: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el PDF del estado de cuenta de ASOTEMA',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Vista previa del PDF de estado de cuenta de ASOTEMA
+     */
+    public function estadoAsotemaPreview()
+    {
+        try {
+            \Log::info('Iniciando generación de vista previa de PDF de estado de cuenta ASOTEMA');
+            
+            // Obtener el estado de cuenta de ASOTEMA
+            $estadoCuentaResponse = $this->estadoAsotema(request());
+            $responseData = $estadoCuentaResponse->getData();
+            
+            if (!$responseData || !$responseData->success) {
+                \Log::error('Error al obtener estado de cuenta: ' . json_encode($responseData));
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al obtener el estado de cuenta de ASOTEMA'
+                ], 500);
+            }
+            
+            $estadoCuenta = $responseData->data;
+            \Log::info('Estado de cuenta obtenido exitosamente');
+            
+            // Verificar que la vista existe
+            $viewPath = resource_path('views/reports/estado-cuenta-asotema.blade.php');
+            if (!file_exists($viewPath)) {
+                \Log::error('Vista no encontrada: ' . $viewPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vista del PDF no encontrada'
+                ], 500);
+            }
+            
+            \Log::info('Generando PDF con DomPDF');
+            // Convertir objeto a array para la vista Blade
+            $estadoCuentaArray = json_decode(json_encode($estadoCuenta), true);
+            
+            // Generar PDF
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.estado-cuenta-asotema', [
+                'estadoCuenta' => $estadoCuentaArray
+            ]);
+            
+            $pdf->setPaper('A4', 'portrait');
+            
+            $filename = "estado_cuenta_asotema_" . date('Y-m-d') . ".pdf";
+            $filename = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $filename);
+            
+            \Log::info('PDF generado exitosamente, descargando como: ' . $filename);
+            return $pdf->download($filename);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error al generar vista previa: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar vista previa: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

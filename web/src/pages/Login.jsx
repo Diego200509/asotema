@@ -18,7 +18,9 @@ const Login = () => {
 
     if (result.success) {
       showSuccess('¡Bienvenido! Sesión iniciada correctamente');
-      navigate('/socios'); // Redirigir a socios en lugar de usuarios
+      // Redirigir según el rol: CAJERO va a reportes, otros a socios
+      const redirectPath = result.user?.rol === 'CAJERO' ? '/reportes' : '/socios';
+      navigate(redirectPath);
     } else {
       showError(result.message);
     }

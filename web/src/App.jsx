@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -15,6 +15,23 @@ import Eventos from './pages/Eventos';
 import EventoDetalle from './pages/EventoDetalle';
 import Reportes from './pages/Reportes';
 import DescuentosMensuales from './pages/DescuentosMensuales';
+
+// Componente para redirigir según el rol
+const RoleBasedRedirect = () => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <p className="text-gray-600">Cargando...</p>
+    </div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <Navigate to={user.rol === 'CAJERO' ? '/reportes' : '/socios'} replace />;
+};
 
 function App() {
   return (
@@ -51,11 +68,11 @@ function App() {
               }
             />
 
-            {/* Rutas de Socios (todos los roles autenticados) */}
+            {/* Rutas de Socios (ADMIN y TESORERO solamente) */}
             <Route
               path="/socios"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <Socios />
                 </ProtectedRoute>
               }
@@ -63,17 +80,17 @@ function App() {
             <Route
               path="/socios/:id"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <SocioDetalle />
                 </ProtectedRoute>
               }
             />
 
-            {/* Rutas de Préstamos (todos los roles autenticados) */}
+            {/* Rutas de Préstamos (ADMIN y TESORERO solamente) */}
             <Route
               path="/prestamos"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <Prestamos />
                 </ProtectedRoute>
               }
@@ -81,13 +98,13 @@ function App() {
             <Route
               path="/prestamos/:id"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <PrestamoDetalle />
                 </ProtectedRoute>
               }
             />
 
-            {/* Rutas de Ahorros (todos los roles autenticados) */}
+            {/* Rutas de Ahorros (ADMIN y TESORERO solamente) */}
             <Route
               path="/ahorros/lote"
               element={
@@ -99,17 +116,17 @@ function App() {
             <Route
               path="/ahorros/historico"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <AhorrosHistorico />
                 </ProtectedRoute>
               }
             />
 
-            {/* Rutas de Eventos (todos los roles autenticados) */}
+            {/* Rutas de Eventos (ADMIN y TESORERO solamente) */}
             <Route
               path="/eventos"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <Eventos />
                 </ProtectedRoute>
               }
@@ -117,17 +134,17 @@ function App() {
             <Route
               path="/eventos/:id"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
                   <EventoDetalle />
                 </ProtectedRoute>
               }
             />
 
-            {/* Rutas de Reportes (solo ADMIN y TESORERO) */}
+            {/* Rutas de Reportes (ADMIN, TESORERO y CAJERO) */}
             <Route
               path="/reportes"
               element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO', 'CAJERO']}>
                   <Reportes />
                 </ProtectedRoute>
               }
@@ -135,17 +152,17 @@ function App() {
             <Route
               path="/reportes/descuentos-mensuales"
               element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO']}>
+                <ProtectedRoute allowedRoles={['ADMIN', 'TESORERO', 'CAJERO']}>
                   <DescuentosMensuales />
                 </ProtectedRoute>
               }
             />
 
-            {/* Ruta raíz redirige a socios */}
-            <Route path="/" element={<Navigate to="/socios" replace />} />
+            {/* Ruta raíz - redirige según el rol */}
+            <Route path="/" element={<RoleBasedRedirect />} />
 
-            {/* Ruta 404 */}
-            <Route path="*" element={<Navigate to="/socios" replace />} />
+            {/* Ruta 404 - redirige según el rol */}
+            <Route path="*" element={<RoleBasedRedirect />} />
           </Routes>
         </AuthProvider>
       </ToastProvider>

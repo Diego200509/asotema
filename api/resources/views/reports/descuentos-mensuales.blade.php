@@ -20,17 +20,18 @@
             padding-bottom: 15px;
         }
         
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            display: block;
+        }
+        
         .title {
             font-size: 18px;
             font-weight: bold;
             color: #2c5aa0;
             margin-bottom: 5px;
-        }
-        
-        .subtitle {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
         }
         
         .period {
@@ -118,20 +119,12 @@
         .page-break {
             page-break-before: always;
         }
-        
-        .calculations {
-            position: absolute;
-            bottom: 50px;
-            left: 20px;
-            font-size: 10px;
-            color: #666;
-        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="title">ASOCIACIÓN DE TRABAJADORES Y EMPLEADOS DEL MERCADO MAYORISTA</div>
-        <div class="subtitle">(ASOTEMA)</div>
+        <img src="{{ public_path('images/asotema_pdf.png') }}" alt="ASOTEMA" class="logo">
+        <div class="title">ASOCIACIÓN DE TRABAJADORES Y EMPLEADOS DEL MERCADO MAYORISTA AMBATO</div>
         <div class="period">DESCUENTO MES DE {{ strtoupper($descuentos['mes']) }}</div>
     </div>
 
@@ -192,20 +185,8 @@
 
     <div class="signature-section">
         <div class="signature-line"></div>
-        <div class="signature-text">SRTA. ANABEL ALTAMIRANO</div>
+        <div class="signature-text">TLGA. ANABEL ALTAMIRANO</div>
         <div class="signature-text">TESORERA ASOTEMA</div>
-    </div>
-
-    <div class="calculations">
-        @php
-            $totalCuotas = 0;
-            foreach($descuentos['prestamos_unicos'] as $prestamo) {
-                $totalCuotas += $descuentos['totales']['prestamo_' . $prestamo->id] ?? 0;
-            }
-        @endphp
-        <div>LOSER= {{ number_format($descuentos['totales']['ahorro'] + $descuentos['totales']['gastos_eventos'] + $totalCuotas, 2, ',', '.') }}</div>
-        <div>CT = {{ number_format($totalCuotas, 0) }}</div>
-        <div style="border-top: 1px solid #666; margin-top: 2px; padding-top: 2px;">{{ number_format($descuentos['totales']['total'], 2, ',', '.') }} //</div>
     </div>
 </body>
 </html>

@@ -17,13 +17,24 @@ const SearchableChecklist = ({
   const [isAllSelected, setIsAllSelected] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Filtrar items basado en búsqueda
+  // Filtrar items basado en búsqueda (por nombre o cédula)
   const filteredItems = useMemo(() => {
     if (!searchTerm) return items;
     
-    return items.filter(item => 
-      item.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    return items.filter(item => {
+      // Buscar en el label (nombre)
+      const labelMatch = item.label?.toLowerCase().includes(searchLower);
+      
+      // Buscar en el subtitle (cédula)
+      const subtitleMatch = item.subtitle?.toLowerCase().includes(searchLower);
+      
+      // Buscar en ambos campos combinados
+      const combinedMatch = `${item.label || ''} ${item.subtitle || ''}`.toLowerCase().includes(searchLower);
+      
+      return labelMatch || subtitleMatch || combinedMatch;
+    });
   }, [items, searchTerm]);
 
   // Verificar si todos están seleccionados
@@ -132,7 +143,8 @@ const SearchableChecklist = ({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder={placeholder}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                className="w-full pl-10 pr-3 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                autoFocus
               />
             </div>
           </div>
@@ -166,26 +178,44 @@ const SearchableChecklist = ({
                 )}
 
                 {/* Items */}
-                {filteredItems.map((item) => (
-                  <div key={item.value} className="px-3 py-2 hover:bg-gray-50">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.includes(item.value)}
-                        onChange={() => handleItemToggle(item.value)}
-                        className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                      />
-                      <span className="text-sm text-gray-900 flex-1">
-                        {item.label}
-                      </span>
-                      {item.subtitle && (
-                        <span className="text-xs text-gray-500">
-                          {item.subtitle}
+                {filteredItems.map((item) => {
+                  // Función para resaltar el texto encontrado
+                  const highlightText = (text, highlight) => {
+                    if (!highlight || !text) return text;
+                    
+                    const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    const parts = text.split(regex);
+                    
+                    return parts.map((part, index) => 
+                      regex.test(part) ? (
+                        <mark key={index} className="bg-yellow-200 px-1 rounded">
+                          {part}
+                        </mark>
+                      ) : part
+                    );
+                  };
+                  
+                  return (
+                    <div key={item.value} className="px-3 py-2 hover:bg-gray-50">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(item.value)}
+                          onChange={() => handleItemToggle(item.value)}
+                          className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-900 flex-1">
+                          {searchTerm ? highlightText(item.label, searchTerm) : item.label}
                         </span>
-                      )}
-                    </label>
-                  </div>
-                ))}
+                        {item.subtitle && (
+                          <span className="text-xs text-gray-500">
+                            {searchTerm ? highlightText(item.subtitle, searchTerm) : item.subtitle}
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>

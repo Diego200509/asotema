@@ -86,7 +86,8 @@ class DescuentosMensualesService
     private function calcularAhorroMensual($socioId, $inicioMes, $finMes)
     {
         return AporteAhorro::where('socio_id', $socioId)
-            ->whereBetween('fecha_operacion', [$inicioMes, $finMes])
+            ->whereYear('mes', $inicioMes->year)
+            ->whereMonth('mes', $inicioMes->month)
             ->where('tipo', 'DEPOSITO')
             ->sum('monto');
     }

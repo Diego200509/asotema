@@ -290,12 +290,7 @@ const SocioDetalleTabs = ({ socio }) => {
         {activeTab === 'prestamos' && (
           <div className="flex flex-col h-full min-h-0"> {/* SCROLL-FIX: Flex column for Préstamos content */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar"> {/* SCROLL-FIX: Scrollable content for Préstamos */}
-              <div className="p-6 pb-24 space-y-6"> {/* SCROLL-FIX: Add padding bottom for sticky pagination */}
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-900">Préstamos del Socio</h3>
-                </div>
-
-                {/* Tabla de préstamos */}
+              <div className="p-6 pb-4"> {/* SCROLL-FIX: Reduced padding bottom */}
                 <PrestamoSocioTable
                   prestamos={prestamos}
                   loading={loadingPrestamos}
@@ -321,7 +316,7 @@ const SocioDetalleTabs = ({ socio }) => {
         )}
 
         {activeTab === 'estado' && (
-          <div className="p-6 pb-24"> {/* SCROLL-FIX: Padding bottom for sticky pagination */}
+          <div className="p-6 pb-4"> {/* SCROLL-FIX: Reduced padding bottom */}
             <div className="space-y-6">
               <div>
                 <h4 className="text-lg font-semibold text-gray-900">
@@ -428,7 +423,7 @@ const SocioDetalleTabs = ({ socio }) => {
 
         {/* Pestaña Ahorros */}
         {activeTab === 'ahorros' && (
-          <div className="p-6 pb-24"> {/* SCROLL-FIX: Padding bottom for sticky pagination */}
+          <div className="p-6 pb-4"> {/* SCROLL-FIX: Reduced padding bottom */}
             <div className="space-y-6">
               {/* Resumen de ahorros */}
               <AhorrosResumen socioId={socio.id} />
@@ -452,8 +447,8 @@ const SocioDetalleTabs = ({ socio }) => {
                 loading={loadingAportes}
                 onRefresh={fetchAportesAhorro}
                 showSocio={false}
-                pagination={paginationAhorro.last_page > 1 ? paginationAhorro : null}
-                onPageChange={paginationAhorro.last_page > 1 ? handlePageChangeAhorro : null}
+                pagination={null}
+                onPageChange={null}
               />
             </div>
           </div>
