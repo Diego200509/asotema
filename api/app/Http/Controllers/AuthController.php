@@ -33,15 +33,18 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Generar token JWT
+        // Generar token JWT y refresh token
         $token = JWTAuth::fromUser($usuario);
+        $refreshToken = JWTAuth::customClaims(['type' => 'refresh'])->fromUser($usuario);
 
         return response()->json([
             'success' => true,
             'message' => 'Login exitoso',
             'data' => [
                 'token' => $token,
+                'refresh_token' => $refreshToken,
                 'token_type' => 'bearer',
+                'expires_in' => config('jwt.ttl') * 60, // en segundos
                 'usuario' => [
                     'id' => $usuario->id,
                     'nombre' => $usuario->nombre,
@@ -106,6 +109,55 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Token inválido o expirado'
+            ], 401);
+        }
+    }
+
+    /**
+     * Refrescar token JWT usando refresh token.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refresh(Request $request)
+    {
+        try {
+            $request->validate([
+                'refresh_token' => 'required|string',
+            ]);
+
+            // Intentar autenticar con el refresh token
+            $token = $request->input('refresh_token');
+            $usuario = JWTAuth::setToken($token)->authenticate();
+
+            if (!$usuario || !$usuario->activo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token de refresco inválido o usuario inactivo'
+                ], 401);
+            }
+
+            // Invalidar el refresh token anterior
+            JWTAuth::invalidate(JWTAuth::setToken($token)->getToken());
+
+            // Generar nuevo token y refresh token
+            $newToken = JWTAuth::fromUser($usuario);
+            $newRefreshToken = JWTAuth::customClaims(['type' => 'refresh'])->fromUser($usuario);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Token refrescado exitosamente',
+                'data' => [
+                    'token' => $newToken,
+                    'refresh_token' => $newRefreshToken,
+                    'token_type' => 'bearer',
+                    'expires_in' => config('jwt.ttl') * 60, // en segundos
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al refrescar el token'
             ], 401);
         }
     }

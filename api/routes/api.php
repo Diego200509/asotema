@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 // Rutas de autenticación (públicas)
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
 });
 
 // Rutas protegidas con JWT
