@@ -22,10 +22,6 @@ const LoginForm = ({ onSubmit, loading = false }) => {
     setPassword('');
   };
 
-  const handleForgotPassword = () => {
-    alert('Funcionalidad de recuperación de contraseña en desarrollo');
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <Input
@@ -44,16 +40,6 @@ const LoginForm = ({ onSubmit, loading = false }) => {
         placeholder="••••••••"
         required
       />
-
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={handleForgotPassword}
-          className="text-sm text-danger hover:text-danger-700 transition"
-        >
-          ¿Olvidó su contraseña?
-        </button>
-      </div>
 
       <button
         type="submit"

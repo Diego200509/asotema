@@ -1,7 +1,6 @@
 import React from 'react';
 import Card from '../shared/Card';
 import LoginForm from './LoginForm';
-import LoginCredentials from './LoginCredentials';
 
 const LoginCard = ({ onSubmit, loading }) => {
   return (
@@ -14,8 +13,6 @@ const LoginCard = ({ onSubmit, loading }) => {
         onSubmit={onSubmit}
         loading={loading}
       />
-      
-      <LoginCredentials />
     </Card>
   );
 };
